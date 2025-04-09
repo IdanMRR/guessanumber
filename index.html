@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>משחק ניחושים</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+</head>
+<body class="dark">
+  <button id="settingsBtn" title="הגדרות">⚙️</button>
+  <button id="statsBtn" title="סטטיסטיקות">📊</button>
+
+  <div id="gameArea">
+    <h1>משחק ניחושים</h1>
+    <div id="difficultySection">
+      <label for="difficulty">בחר רמת קושי:</label>
+      <span class="new-arrow">⬅️</span>
+      <select id="difficulty">
+        <option value="10">קל (1-10)</option>
+        <option value="50">בינוני (1-50)</option>
+        <option value="100">קשה (1-100)</option>
+      </select>
+    </div>
+    <p id="highscore">🏆 שיא אישי: --</p>
+    <button id="startGameBtn">התחל משחק</button>
+    <button id="stopGameBtn" style="display: none;">עצור משחק</button>
+    <div id="inputContainer" class="hidden">
+      <input type="number" id="guessInput" placeholder="הזן ניחוש">
+      <button id="guessButton">נחש!</button>
+      <button id="hintButton">רמז</button>
+    </div>
+    <p id="message"></p>
+    <div id="livesDisplay" class="lives-display"></div>
+    <p id="timer"></p>
+    <p id="idleTimer"></p>
+    <button id="viewStatsBtn">📊 צפה בסטטיסטיקות</button>
+  </div>
+
+  <div id="settingsMenu" class="hidden">
+    <h3>הגדרות</h3>
+    <div class="settings-section">
+      <button id="muteBtn">🔊 השתק סאונד</button>
+      <button id="vibrationBtn">📳 כבה ויברציה</button>
+    </div>
+    <div class="settings-section">
+      <label for="volumeControl">עוצמת שמע:</label>
+      <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
+    </div>
+    <div class="settings-section">
+      <label for="themeSelect">בחר ערכת נושא:</label>
+      <select id="themeSelect">
+        <option value="dark">כהה</option>
+        <option value="light">בהיר</option>
+        <option value="neon">ניאון</option>
+      </select>
+    </div>
+    <div class="settings-section">
+      <label for="confettiType">סוג קונפטי:</label>
+      <select id="confettiType">
+        <option value="default">רגיל</option>
+        <option value="stars">כוכבים</option>
+        <option value="hearts">לבבות</option>
+        <option value="none">ללא קונפטי</option>
+      </select>
+    </div>
+    <div class="settings-section">
+      <label for="confettiAmount">כמות קונפטי:</label>
+      <select id="confettiAmount">
+        <option value="light">קל</option>
+        <option value="medium">בינוני</option>
+        <option value="heavy">כבד</option>
+      </select>
+    </div>
+    <div class="settings-section">
+      <label>בחר צבע רקע:</label>
+      <div class="color-options">
+        <button class="color-swatch" data-color="#1e1e1e" style="background-color: #1e1e1e;"></button>
+        <button class="color-swatch" data-color="#f0f0f0" style="background-color: #f0f0f0;"></button>
+        <button class="color-swatch" data-color="#0f0c29" style="background-color: #0f0c29;"></button>
+        <input type="color" id="customColor" class="color-swatch">
+      </div>
+    </div>
+    <button id="backToGame">חזור למשחק</button>
+  </div>
+
+  <div id="statsMenu" class="hidden">
+    <h3>סטטיסטיקות</h3>
+    <div class="sort-options">
+      <label for="sortStats">מיין לפי:</label>
+      <select id="sortStats">
+        <option value="date">תאריך</option>
+        <option value="time">זמן</option>
+        <option value="guesses">מספר ניחושים</option>
+        <option value="difficulty">רמת קושי</option>
+      </select>
+    </div>
+    <p id="averageTime"></p>
+    <p id="successRate"></p>
+    <canvas id="statsChart"></canvas>
+    <div id="detailedStats">
+      <h4>פרטי ניצחונות:</h4>
+      <ul id="detailedStatsList"></ul>
+    </div>
+    <button id="resetStatsBtn">אפס סטטיסטיקות</button>
+    <button id="backToGameFromStats">חזור למשחק</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
