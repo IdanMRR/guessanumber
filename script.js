@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let idleTimeout;
   let idleCountdown = 30;
   let idleCountdownInterval;
-  let bestScore = parseInt(localStorage.getItem("bestScore")) || 0; // מספר הניצחונות הכולל
+  let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
   let guessCount = 0;
   let gameTime = 0;
   let totalGames = parseInt(localStorage.getItem("totalGames")) || 0;
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const idleTimerDisplay = document.getElementById("idleTimer");
 
-  highscoreDisplay.textContent = `🏆 שיא אישי: ${bestScore === 0 ? "--" : bestScore}`; // עדכון התצוגה עם מספר הניצחונות
+  highscoreDisplay.textContent = `🏆 שיא אישי: ${bestScore === 0 ? "--" : bestScore}`;
 
   const gameArea = document.getElementById("gameArea");
   const settingsMenu = document.getElementById("settingsMenu");
@@ -236,17 +236,35 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("inputContainer").classList.add("hidden");
   });
 
+  // שינוי התנהגות כפתור "הגדרות"
   settingsButton.addEventListener("click", () => {
-    gameArea.classList.add("hidden");
-    settingsMenu.classList.remove("hidden");
-    statsMenu.classList.add("hidden");
+    if (settingsMenu.classList.contains("hidden")) {
+      // אם תפריט ההגדרות סגור, פתח אותו
+      gameArea.classList.add("hidden");
+      settingsMenu.classList.remove("hidden");
+      statsMenu.classList.add("hidden");
+    } else {
+      // אם תפריט ההגדרות פתוח, חזור למסך הראשי
+      gameArea.classList.remove("hidden");
+      settingsMenu.classList.add("hidden");
+      statsMenu.classList.add("hidden");
+    }
   });
 
+  // שינוי התנהגות כפתור "סטטיסטיקות"
   statsButton.addEventListener("click", () => {
-    gameArea.classList.add("hidden");
-    settingsMenu.classList.add("hidden");
-    statsMenu.classList.remove("hidden");
-    displayDetailedStats();
+    if (statsMenu.classList.contains("hidden")) {
+      // אם תפריט הסטטיסטיקות סגור, פתח אותו
+      gameArea.classList.add("hidden");
+      settingsMenu.classList.add("hidden");
+      statsMenu.classList.remove("hidden");
+      displayDetailedStats();
+    } else {
+      // אם תפריט הסטטיסטיקות פתוח, חזור למסך הראשי
+      gameArea.classList.remove("hidden");
+      settingsMenu.classList.add("hidden");
+      statsMenu.classList.add("hidden");
+    }
   });
 
   viewStatsButton.addEventListener("click", () => {
@@ -257,7 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("resetStatsBtn").addEventListener("click", () => {
-    bestScore = 0; // איפוס מספר הניצחונות
+    bestScore = 0;
     totalGames = 0;
     playerStats = [];
     localStorage.setItem("bestScore", bestScore.toString());
@@ -503,7 +521,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function saveBestScore() {
-    bestScore++; // הגדלת מספר הניצחונות ב-1
+    bestScore++;
     console.log(`ניצחון חדש! מספר הניצחונות הכולל: ${bestScore}`);
     localStorage.setItem("bestScore", bestScore.toString());
     highscoreDisplay.textContent = `🏆 שיא אישי: ${bestScore === 0 ? "--" : bestScore}`;
