@@ -7,110 +7,182 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="dark">
-  <button id="settingsBtn" title="הגדרות">⚙️</button>
-  <button id="statsBtn" title="סטטיסטיקות">📊</button>
+  <!-- שכבת חלקיקים ברקע -->
+  <div id="particles-js"></div>
+
+  <button id="settingsBtn" title="הגדרות" aria-label="פתח תפריט הגדרות">⚙️</button>
+  <button id="statsBtn" title="סטטיסטיקות" aria-label="פתח תפריט סטטיסטיקות">📊</button>
+
+  <!-- שדה הזנת שם משתמש -->
+  <div id="usernameSection" class="hidden">
+    <label for="usernameInput">הזן שם משתמש:</label>
+    <input type="text" id="usernameInput" placeholder="שם משתמש" aria-required="true">
+    <button id="submitUsernameBtn" aria-label="אשר שם משתמש">אישור</button>
+  </div>
 
   <div id="gameArea">
     <h1>משחק ניחושים</h1>
+    <p id="subtitle">נחש את המספר וזכה! ✨</p>
     <div id="difficultySection">
       <label for="difficulty">בחר רמת קושי:</label>
-      <span class="new-arrow">⬅️</span>
-      <select id="difficulty">
+      <span class="new-arrow" aria-hidden="true">▼</span>
+      <select id="difficulty" aria-label="בחר רמת קושי">
         <option value="10">קל (1-10)</option>
         <option value="50">בינוני (1-50)</option>
         <option value="100">קשה (1-100)</option>
       </select>
     </div>
-    <p id="highscore">🏆 שיא אישי: --</p>
-    <button id="startGameBtn">התחל משחק</button>
-    <button id="stopGameBtn" style="display: none;">עצור משחק</button>
-    <div id="inputContainer" class="hidden">
-      <input type="number" id="guessInput" placeholder="הזן ניחוש">
-      <button id="guessButton">נחש!</button>
-      <button id="hintButton">רמז</button>
+    <div id="modeSection">
+      <label for="gameMode">בחר מצב משחק:</label>
+      <span class="new-arrow" aria-hidden="true">▼</span>
+      <select id="gameMode" aria-label="בחר מצב משחק">
+        <option value="normal">רגיל</option>
+        <option value="fast">מהיר (30 שניות)</option>
+        <option value="noHints">בלי רמזים</option>
+        <option value="dynamicRange">טווח משתנה</option>
+      </select>
     </div>
-    <p id="message"></p>
-    <div id="livesDisplay" class="lives-display"></div>
-    <p id="timer"></p>
-    <p id="idleTimer"></p>
-    <button id="viewStatsBtn">📊 צפה בסטטיסטיקות</button>
+    <p id="highscore" aria-live="polite">🏆 שיא אישי: --</p>
+    <button id="startGameBtn" aria-label="התחל משחק חדש">התחל משחק</button>
+    <button id="stopGameBtn" style="display: none;" aria-label="עצור משחק">עצור משחק</button>
+    <div id="inputContainer" class="hidden">
+      <input type="number" id="guessInput" placeholder="הזן ניחוש" aria-label="הזן את הניחוש שלך">
+      <button id="guessButton" aria-label="בצע ניחוש">נחש!</button>
+      <button id="hintButton" aria-label="קבל רמז">רמז</button>
+    </div>
+    <p id="message" aria-live="assertive"></p>
+    <div id="livesDisplay" class="lives-display" aria-label="מספר החיים הנותרים"></div>
+    <p id="timer" aria-live="polite"></p>
+    <p id="idleTimer" aria-live="polite"></p>
+    <button id="viewStatsBtn" aria-label="צפה בסטטיסטיקות">📊 צפה בסטטיסטיקות</button>
+    <button id="viewAchievementsBtn" aria-label="צפה בהישגים">🏅 צפה בהישגים</button>
+    <button id="viewLeaderboardBtn" aria-label="צפה בדירוג">🏆 צפה בדירוג</button>
   </div>
 
   <div id="settingsMenu" class="hidden">
-    <h3>הגדרות</h3>
-    <div class="settings-section">
-      <button id="muteBtn">🔊 השתק סאונד</button>
-      <button id="vibrationBtn">📳 כבה ויברציה</button>
-    </div>
-    <div class="settings-section">
-      <label for="volumeControl">עוצמת שמע:</label>
-      <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1">
-    </div>
-    <div class="settings-section">
-      <label for="themeSelect">בחר ערכת נושא:</label>
-      <select id="themeSelect">
-        <option value="dark">כהה</option>
-        <option value="light">בהיר</option>
-        <option value="neon">ניאון</option>
-      </select>
-    </div>
-    <div class="settings-section">
-      <label for="confettiType">סוג קונפטי:</label>
-      <select id="confettiType">
-        <option value="default">רגיל</option>
-        <option value="stars">כוכבים</option>
-        <option value="hearts">לבבות</option>
-        <option value="none">ללא קונפטי</option>
-      </select>
-    </div>
-    <div class="settings-section">
-      <label for="confettiAmount">כמות קונפטי:</label>
-      <select id="confettiAmount">
-        <option value="light">קל</option>
-        <option value="medium">בינוני</option>
-        <option value="heavy">כבד</option>
-      </select>
-    </div>
-    <div class="settings-section">
-      <label>בחר צבע רקע:</label>
-      <div class="color-options">
-        <button class="color-swatch" data-color="#1e1e1e" style="background-color: #1e1e1e;"></button>
-        <button class="color-swatch" data-color="#f0f0f0" style="background-color: #f0f0f0;"></button>
-        <button class="color-swatch" data-color="#0f0c29" style="background-color: #0f0c29;"></button>
-        <input type="color" id="customColor" class="color-swatch">
+    <div class="menuArea">
+      <h3>הגדרות</h3>
+      <div class="settings-section">
+        <button id="muteBtn" aria-label="השתק או בטל השתקת סאונד">🔊 השתק סאונד</button>
+        <button id="vibrationBtn" aria-label="כבה או הפעל ויברציה">📳 כבה ויברציה</button>
       </div>
+      <button id="changeUsernameBtn" aria-label="שנה שם משתמש">שנה שם משתמש</button>
+      <div class="settings-section">
+        <p id="vibrationSupportMessage" aria-live="polite"></p>
+      </div>
+      <div class="settings-section">
+        <label for="volumeControl">עוצמת שמע:</label>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" aria-label="התאם עוצמת שמע">
+      </div>
+      <div class="settings-section">
+        <label for="themeSelect">בחר ערכת נושא:</label>
+        <select id="themeSelect" aria-label="בחר ערכת נושא">
+          <option value="dark">כהה</option>
+          <option value="light">בהיר</option>
+          <option value="neon">ניאון</option>
+          <option value="space" disabled>חלל (נעול 🔒)</option>
+        </select>
+      </div>
+      <div class="settings-section">
+        <label for="confettiType">סוג קונפטי:</label>
+        <select id="confettiType" aria-label="בחר סוג קונפטי">
+          <option value="default">רגיל</option>
+          <option value="stars">כוכבים</option>
+          <option value="hearts">לבבות</option>
+          <option value="butterflies" disabled>פרפרים (נעול 🔒)</option>
+          <option value="none">ללא קונפטי</option>
+        </select>
+      </div>
+      <div class="settings-section">
+        <label for="confettiAmount">כמות קונפטי:</label>
+        <select id="confettiAmount" aria-label="בחר כמות קונפטי">
+          <option value="light">קל</option>
+          <option value="medium">בינוני</option>
+          <option value="heavy">כבד</option>
+        </select>
+      </div>
+      <div class="settings-section">
+        <label for="rgbSpeed">מהירות גלי צבעים:</label>
+        <select id="rgbSpeed" aria-label="בחר מהירות גלי צבעים">
+          <option value="slow">איטי (20 שניות)</option>
+          <option value="medium" selected>בינוני (10 שניות)</option>
+          <option value="fast">מהיר (5 שניות)</option>
+        </select>
+      </div>
+      <div class="settings-section">
+        <button id="rgbBtn" aria-label="הפעל או כבה גלי צבעים">הפעל גלי צבעים</button>
+      </div>
+      <div class="settings-section">
+        <label>בחר גרדיאנט רקע:</label>
+        <div class="color-options">
+          <input type="color" id="gradientColor1" class="color-swatch" value="#2a2a2a" aria-label="בחר צבע ראשון לגרדיאנט">
+          <input type="color" id="gradientColor2" class="color-swatch" value="#4a90e2" aria-label="בחר צבע שני לגרדיאנט">
+          <button id="applyGradientBtn" aria-label="החל גרדיאנט מותאם אישית">החל גרדיאנט</button>
+        </div>
+      </div>
+      <button id="backToGame" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
-    <button id="backToGame">חזור למשחק</button>
   </div>
 
   <div id="statsMenu" class="hidden">
-    <h3>סטטיסטיקות</h3>
-    <div class="sort-options">
-      <label for="sortStats">מיין לפי:</label>
-      <select id="sortStats">
-        <option value="date">תאריך</option>
-        <option value="time">זמן</option>
-        <option value="guesses">מספר ניחושים</option>
-        <option value="difficulty">רמת קושי</option>
-      </select>
+    <div class="menuArea">
+      <h3>סטטיסטיקות</h3>
+      <div class="sort-options">
+        <label for="sortStats">מיין לפי:</label>
+        <select id="sortStats" aria-label="מיין סטטיסטיקות לפי">
+          <option value="date">תאריך</option>
+          <option value="time">זמן</option>
+          <option value="guesses">מספר ניחושים</option>
+          <option value="difficulty">רמת קושי</option>
+        </select>
+      </div>
+      <p id="averageTime" aria-live="polite"></p>
+      <p id="successRate" aria-live="polite"></p>
+      <canvas id="statsChart" aria-label="גרף סטטיסטיקות משחק"></canvas>
+      <div id="detailedStats">
+        <h4>פרטי ניצחונות:</h4>
+        <ul id="detailedStatsList" aria-label="רשימת ניצחונות מפורטת"></ul>
+      </div>
+      <button id="resetStatsBtn" aria-label="אפס סטטיסטיקות">אפס סטטיסטיקות</button>
+      <br>
+      <button id="backToGameFromStats" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
-    <p id="averageTime"></p>
-    <p id="successRate"></p>
-    <canvas id="statsChart"></canvas>
-    <div id="detailedStats">
-      <h4>פרטי ניצחונות:</h4>
-      <ul id="detailedStatsList"></ul>
-    </div>
-    <button id="resetStatsBtn">אפס סטטיסטיקות</button>
-    <br><br>
-    <button id="backToGameFromStats">חזור למשחק</button>
   </div>
 
+  <div id="achievementsMenu" class="hidden">
+    <div class="menuArea">
+      <h3>הישגים</h3>
+      <ul id="achievementsList" aria-label="רשימת הישגים">
+        <li>טוען הישגים...</li>
+      </ul>
+      <button id="backToGameFromAchievements" aria-label="חזור למשחק">חזור למשחק</button>
+    </div>
+  </div>
+
+  <div id="leaderboardMenu" class="hidden">
+    <div class="menuArea">
+      <h3>דירוג שחקנים</h3>
+      <ul id="leaderboardList" aria-label="רשימת דירוג שחקנים">
+        <li>טוען דירוג...</li>
+      </ul>
+      <button id="backToGameFromLeaderboard" aria-label="חזור למשחק">חזור למשחק</button>
+    </div>
+  </div>
+  <div id="confirmationDialog" class="hidden">
+    <div class="confirmation-content">
+      <h3 id="confirmationMessage">האם אתה בטוח?</h3>
+      <div class="confirmation-buttons">
+        <button id="confirmBtn" aria-label="אשר">אשר</button>
+        <button id="cancelBtn" aria-label="בטל">בטל</button>
+      </div>
+    </div>
+  </div>
   <script src="script.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92daf1a1ccb85929',t:'MTc0NDIxMTU1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
