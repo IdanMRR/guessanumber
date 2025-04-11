@@ -19,11 +19,15 @@
   <button id="settingsBtn" title="הגדרות" aria-label="פתח תפריט הגדרות">⚙️</button>
   <button id="statsBtn" title="סטטיסטיקות" aria-label="פתח תפריט סטטיסטיקות">📊</button>
 
-  <!-- שדה הזנת שם משתמש -->
   <div id="usernameSection" class="hidden">
-    <label for="usernameInput">הזן שם משתמש:</label>
+    <label for="usernameInput" tabindex="-1">הזן שם משתמש:</label>
     <input type="text" id="usernameInput" placeholder="שם משתמש" aria-required="true">
+    <div id="adminPasswordSection" style="display: none;">
+      <label for="adminPasswordInput" tabindex="-1">הזן סיסמת מנהל:</label>
+      <input type="password" id="adminPasswordInput" placeholder="סיסמת מנהל" aria-required="true">
+    </div>
     <button id="submitUsernameBtn" aria-label="אשר שם משתמש">אישור</button>
+    <button id="cancelUsernameBtn" aria-label="בטל שינוי שם משתמש" style="display: none;">ביטול</button>
   </div>
 
   <div id="gameArea">
@@ -52,11 +56,12 @@
     <button id="startGameBtn" aria-label="התחל משחק חדש">התחל משחק</button>
     <button id="stopGameBtn" style="display: none;" aria-label="עצור משחק">עצור משחק</button>
     <div id="inputContainer" class="hidden">
-      <input type="number" id="guessInput" placeholder="הזן ניחוש" aria-label="הזן את הניחוש שלך">
+      <input type="number" id="guessInput" placeholder="הזן ניחוש" aria-label="הזן את הניחוש שלך" disabled>
       <button id="guessButton" aria-label="בצע ניחוש">נחש!</button>
       <button id="hintButton" aria-label="קבל רמז">רמז</button>
     </div>
     <p id="message" aria-live="assertive"></p>
+    <button id="playAgainBtn" style="display: none;" aria-label="שחק שוב">שחק שוב</button>
     <div id="livesDisplay" class="lives-display" aria-label="מספר החיים הנותרים"></div>
     <p id="timer" aria-live="polite"></p>
     <p id="idleTimer" aria-live="polite"></p>
@@ -108,23 +113,19 @@
         </select>
       </div>
       <div class="settings-section">
-        <label for="rgbSpeed">מהירות גלי צבעים:</label>
-        <select id="rgbSpeed" aria-label="בחר מהירות גלי צבעים">
-          <option value="slow">איטי (20 שניות)</option>
-          <option value="medium" selected>בינוני (10 שניות)</option>
-          <option value="fast">מהיר (5 שניות)</option>
-        </select>
-      </div>
-      <div class="settings-section">
-        <button id="rgbBtn" aria-label="הפעל או כבה גלי צבעים">הפעל גלי צבעים</button>
-      </div>
-      <div class="settings-section">
-        <label>בחר גרדיאנט רקע:</label>
-        <div class="color-options">
-          <input type="color" id="gradientColor1" class="color-swatch" value="#2a2a2a" aria-label="בחר צבע ראשון לגרדיאנט">
-          <input type="color" id="gradientColor2" class="color-swatch" value="#4a90e2" aria-label="בחר צבע שני לגרדיאנט">
-          <button id="applyGradientBtn" aria-label="החל גרדיאנט מותאם אישית">החל גרדיאנט</button>
+        <h3>בחר גרדיאנט רקע:</h3>
+        <div class="gradient-picker-container">
+          <div class="color-picker-wrapper">
+            <label for="gradientColor1">צבע 1</label>
+            <input type="color" id="gradientColor1" value="#ff0000">
+          </div>
+          <div class="color-picker-wrapper">
+            <label for="gradientColor2">צבע 2</label>
+            <input type="color" id="gradientColor2" value="#ffff00">
+          </div>
         </div>
+        <button id="applyGradientBtn">החל גרדיאנט</button>
+        <button id="resetGradientBtn">הסר גרדיאנט</button>
       </div>
       <button id="backToGame" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
@@ -133,6 +134,9 @@
   <div id="statsMenu" class="hidden">
     <div class="menuArea">
       <h3>סטטיסטיקות</h3>
+      <p id="winsDisplay"></p>
+      <p id="averageTime" aria-live="polite"></p>
+      <p id="successRate" aria-live="polite"></p>
       <div class="sort-options">
         <label for="sortStats">מיין לפי:</label>
         <select id="sortStats" aria-label="מיין סטטיסטיקות לפי">
@@ -142,10 +146,8 @@
           <option value="difficulty">רמת קושי</option>
         </select>
       </div>
-      <p id="averageTime" aria-live="polite"></p>
-      <p id="successRate" aria-live="polite"></p>
-      <canvas id="statsChart" aria-label="גרף סטטיסטיקות משחק"></canvas>
-      <div id="detailedStats">
+      <canvas id="statsChart" tabindex="0" aria-label="גרף סטטיסטיקות משחק: מספר ניחושים וזמן לפי משחקים"></canvas>
+            <div id="detailedStats">
         <h4>פרטי ניצחונות:</h4>
         <ul id="detailedStatsList" aria-label="רשימת ניצחונות מפורטת"></ul>
       </div>
@@ -167,10 +169,11 @@
 
   <div id="leaderboardMenu" class="hidden">
     <div class="menuArea">
-      <h3>דירוג שחקנים</h3>
+      <h3 tabindex="-1">דירוג שחקנים</h3>
       <ul id="leaderboardList" aria-label="רשימת דירוג שחקנים">
         <li>טוען דירוג...</li>
       </ul>
+      <button id="clearLeaderboardBtn" aria-label="נקה דירוג">נקה דירוג</button>
       <button id="backToGameFromLeaderboard" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
   </div>
@@ -183,6 +186,7 @@
       </div>
     </div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>

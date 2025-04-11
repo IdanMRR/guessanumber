@@ -138,14 +138,13 @@ button:active {
   100% { transform: scale(1); }
 }
 
-/* חלק 3: עיצוב outline ומיקום כפתורי הגדרות וסטטיסטיקות */
 button:focus,
 input:focus,
 select:focus {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
   transition: outline 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
 body.light button:focus,
@@ -160,6 +159,16 @@ body.neon input:focus,
 body.neon select:focus {
   outline: 2px solid #00ffcc;
   box-shadow: 0 0 8px rgba(0, 255, 255, 0.7);
+}
+
+/* Remove focus outline for non-interactive elements */
+h1:focus,
+h3:focus,
+h4:focus,
+p:focus,
+label:focus,
+li:focus {
+  outline: none;
 }
 
 #settingsBtn,
@@ -179,11 +188,11 @@ body.neon select:focus {
 }
 
 #settingsBtn {
-  left: 10px; /* Changed from right: 10px */
+  left: 10px;
 }
 
 #statsBtn {
-  left: 50px; /* Changed from right: 50px */
+  left: 60px;
 }
 
 #settingsBtn:hover,
@@ -528,6 +537,14 @@ body.neon #hintButton {
   text-shadow: var(--text-shadow);
 }
 
+.success {
+  color: green;
+}
+
+.fail {
+  color: red;
+}
+
 #message.success {
   color: #50c878;
   animation: fadeIn 0.5s ease;
@@ -570,6 +587,74 @@ body.neon #hintButton {
   to { opacity: 1; }
 }
 
+/* Container for the gradient pickers */
+.gradient-picker-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+/* Wrapper for each color picker */
+.color-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Label styling */
+.color-picker-wrapper label {
+  font-size: 14px;
+  color: #ffffff; /* Adjust based on theme */
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+/* Style the color picker */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Remove the default color picker border and padding */
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+/* Add a border around the color swatch */
+input[type="color"]::-webkit-color-swatch {
+  border: 2px solid #ffffff; /* White border for visibility */
+}
+
+/* Hover effect */
+input[type="color"]:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Adjust label color for light theme */
+body.light .color-picker-wrapper label {
+  color: #333333;
+}
+
+/* Adjust label color for neon theme */
+body.neon .color-picker-wrapper label {
+  color: #00ffff;
+}
+
 /* חלק 10: עיצוב תפריטי הגדרות וסטטיסטיקות */
 #settingsMenu,
 #statsMenu,
@@ -583,8 +668,53 @@ body.neon #hintButton {
   width: 100%;
   max-width: 500px;
   text-align: center;
+  display: none;
 }
 
+#settingsMenu:not(.hidden),
+#statsMenu:not(.hidden),
+#achievementsMenu:not(.hidden),
+#leaderboardMenu:not(.hidden) {
+  display: block;
+  z-index: 1000;
+}
+#adminPasswordSection {
+  margin-top: 10px;
+}
+
+#adminPasswordSection label {
+  font-size: 18px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+#adminPasswordInput {
+  padding: 10px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 200px;
+  border-radius: 8px;
+  border: 1px solid #ffffff;
+  background: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+}
+
+body.light #adminPasswordInput {
+  border: 1px solid #333333;
+  background: rgba(255, 255, 255, 0.3);
+  color: #333333;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.neon #adminPasswordInput {
+  border: 1px solid #00ffcc;
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffcc;
+  box-shadow: 0 2px 10px rgba(0, 255, 255, 0.3);
+}
 .menuArea {
   max-width: 450px;
   padding: 25px;
@@ -656,8 +786,7 @@ body.neon #volumeControl {
 #themeSelect,
 #confettiType,
 #confettiAmount,
-#sortStats,
-#rgbSpeed {
+#sortStats {
   padding: 8px;
   font-size: 16px;
   border-radius: 5px;
@@ -671,8 +800,7 @@ body.neon #volumeControl {
 body.light #themeSelect,
 body.light #confettiType,
 body.light #confettiAmount,
-body.light #sortStats,
-body.light #rgbSpeed {
+body.light #sortStats {
   border: 1px solid #333333;
   background: rgba(255, 255, 255, 0.3);
   color: #333333;
@@ -681,8 +809,7 @@ body.light #rgbSpeed {
 body.neon #themeSelect,
 body.neon #confettiType,
 body.neon #confettiAmount,
-body.neon #sortStats,
-body.neon #rgbSpeed {
+body.neon #sortStats {
   border: 1px solid #00ffcc;
   background: rgba(0, 255, 255, 0.1);
   color: #00ffcc;
@@ -702,7 +829,7 @@ body.neon #rgbSpeed {
 }
 
 body.light .color-options span {
-  color: #333333;
+  color: #1a1a1a;
 }
 
 body.neon .color-options span {
@@ -723,7 +850,6 @@ body.neon .color-options span {
   transform: scale(1.1);
 }
 
-#rgbBtn,
 #applyGradientBtn {
   padding: 8px 16px;
   font-size: 16px;
@@ -735,17 +861,6 @@ body.neon .color-options span {
   box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
   position: relative;
   overflow: hidden;
-}
-
-#rgbBtn {
-  background: linear-gradient(135deg, #ff8c00, #ffa500);
-  color: #ffffff;
-}
-
-#rgbBtn:hover {
-  background: linear-gradient(135deg, #ffa500, #ff8c00);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 140, 0, 0.6);
 }
 
 #applyGradientBtn {
@@ -760,16 +875,6 @@ body.neon .color-options span {
   box-shadow: 0 6px 20px rgba(30, 144, 255, 0.6);
 }
 
-body.light #rgbBtn {
-  background: linear-gradient(135deg, #ffbf80, #ffdab9);
-  color: #333333;
-}
-
-body.light #rgbBtn:hover {
-  background: linear-gradient(135deg, #ffdab9, #ffbf80);
-  box-shadow: 0 6px 20px rgba(255, 191, 128, 0.6);
-}
-
 body.light #applyGradientBtn {
   background: linear-gradient(135deg, #87cefa, #b0e0e6);
   color: #333333;
@@ -778,11 +883,6 @@ body.light #applyGradientBtn {
 body.light #applyGradientBtn:hover {
   background: linear-gradient(135deg, #b0e0e6, #87cefa);
   box-shadow: 0 6px 20px rgba(135, 206, 250, 0.6);
-}
-
-body.neon #rgbBtn {
-  background: linear-gradient(135deg, #ff8c00, #ffa500);
-  color: #000000;
 }
 
 body.neon #applyGradientBtn {
@@ -1051,41 +1151,6 @@ body.neon #subtitle {
   color: #00ffcc;
 }
 
-.rgb {
-  background: linear-gradient(
-    90deg,
-    #ff0000,
-    #ff00ff,
-    #0000ff,
-    #00ffff,
-    #00ff00,
-    #ffff00,
-    #ff0000
-  );
-  background-size: 800%;
-  animation: wave 10s ease-in-out infinite;
-}
-
-.rgb.slow {
-  animation: wave 40s ease-in-out infinite;
-}
-
-.rgb.medium {
-  animation: wave 20s ease-in-out infinite;
-}
-
-.rgb.fast {
-  animation: wave 10s ease-in-out infinite;
-}
-
-@keyframes wave {
-  0% { background-position: 0% 50%; }
-  25% { background-position: 200% 50%; }
-  50% { background-position: 400% 50%; }
-  75% { background-position: 200% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 .bounce {
   animation: bounce-button 0.3s ease;
 }
@@ -1295,7 +1360,6 @@ body.neon .no-data-message {
   border-radius: 8px;
 }
 
-/* Continuing from where we left off: Scrollbar styles for neon theme */
 body.neon #detailedStatsList::-webkit-scrollbar-track,
 body.neon #achievementsList::-webkit-scrollbar-track,
 body.neon #leaderboardList::-webkit-scrollbar-track {
@@ -1339,8 +1403,7 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   #themeSelect,
   #confettiType,
   #confettiAmount,
-  #sortStats,
-  #rgbSpeed {
+  #sortStats {
     font-size: 14px;
     padding: 6px;
   }
@@ -1365,7 +1428,6 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   #resetStatsBtn,
   #backToGameFromAchievements,
   #backToGameFromLeaderboard,
-  #rgbBtn,
   #applyGradientBtn {
     font-size: 14px;
     padding: 8px 16px;
@@ -1448,7 +1510,6 @@ body.neon :focus {
 /* חלק 19: השבתת אנימציות עבור משתמשים שמעדיפים תנועה מופחתת */
 @media (prefers-reduced-motion: reduce) {
   body,
-  .rgb,
   button:hover,
   .sparkle,
   .heart,
@@ -1473,7 +1534,6 @@ body.neon :focus {
   #resetStatsBtn:hover,
   #backToGameFromAchievements:hover,
   #backToGameFromLeaderboard:hover,
-  #rgbBtn:hover,
   #applyGradientBtn:hover,
   #averageTime:hover,
   #successRate:hover,
@@ -1482,6 +1542,7 @@ body.neon :focus {
     transform: none !important;
   }
 }
+
 #changeUsernameBtn {
   background-color: #4a90e2;
   color: white;
@@ -1506,6 +1567,7 @@ body.neon :focus {
 #changeUsernameBtn:active {
   transform: scale(0.95);
 }
+
 /* Confirmation Dialog */
 #confirmationDialog {
   position: fixed;
@@ -1575,4 +1637,225 @@ body.neon :focus {
 
 #cancelBtn:hover {
   background-color: #c0392b;
+}
+
+/* Align elements to the right on mobile */
+@media (max-width: 600px) {
+  #inputContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin: 20px 0;
+  }
+
+  #settingsBtn, #statsBtn, #viewStatsBtn {
+    float: right;
+    margin-left: 10px;
+  }
+
+  /* Ensure buttons are still clickable */
+  select, button, #guessInput {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  #guessInput {
+    width: 80px; /* Adjust width for better fit */
+    margin-right: 5px;
+  }
+
+  #message {
+    font-size: 16px;
+  }
+}
+
+/* Styling for cancelUsernameBtn */
+#cancelUsernameBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 10px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e94e77, #ff6347);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+}
+
+#cancelUsernameBtn:hover {
+  background: linear-gradient(135deg, #ff6347, #e94e77);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.light #cancelUsernameBtn {
+  background: linear-gradient(135deg, #ff8080, #ffa07a);
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(255, 128, 128, 0.4);
+}
+
+body.light #cancelUsernameBtn:hover {
+  background: linear-gradient(135deg, #ffa07a, #ff8080);
+  box-shadow: 0 6px 20px rgba(255, 128, 128, 0.6);
+}
+
+body.neon #cancelUsernameBtn {
+  background: linear-gradient(135deg, #e94e77, #ff6347);
+  color: #000000;
+}
+
+/* Styling for resetGradientBtn */
+#resetGradientBtn {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+  margin-left: 10px;
+}
+
+#resetGradientBtn:hover {
+  background: linear-gradient(135deg, #ff6347, #ff4040);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.light #resetGradientBtn {
+  background: linear-gradient(135deg, #ff8080, #ffa07a);
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(255, 128, 128, 0.4);
+}
+
+body.light #resetGradientBtn:hover {
+  background: linear-gradient(135deg, #ffa07a, #ff8080);
+  box-shadow: 0 6px 20px rgba(255, 128, 128, 0.6);
+}
+
+body.neon #resetGradientBtn {
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #000000;
+}
+
+/* Prevent text selection on non-interactive text elements to avoid blinking cursor */
+/* Prevent text selection on non-interactive text elements to avoid blinking cursor */
+#gameArea h1,
+#gameArea p,
+#gameArea label,
+#settingsMenu h3,
+#settingsMenu p,
+#settingsMenu label,
+#statsMenu h3,
+#statsMenu h4,
+#statsMenu p,
+#statsMenu label,
+#achievementsMenu h3,
+#achievementsMenu li,
+#leaderboardMenu h3,
+#leaderboardMenu li,
+#usernameSection label,
+#achievementsList li,
+#leaderboardList li,
+#detailedStatsList li,
+#confirmationDialog h3 {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Prevent text selection inside buttons to avoid blinking cursor */
+button {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ensure interactive elements remain selectable */
+#guessInput,
+#usernameInput,
+select {
+  user-select: auto;
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+}
+
+/* Styling for clearLeaderboardBtn */
+#clearLeaderboardBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 10px 5px;
+  font-family: "Rubik", sans-serif;
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+}
+
+#clearLeaderboardBtn:hover {
+  background: linear-gradient(135deg, #ff6347, #ff4040);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.light #clearLeaderboardBtn {
+  background: linear-gradient(135deg, #ff8080, #ffa07a);
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(255, 128, 128, 0.4);
+}
+
+body.light #clearLeaderboardBtn:hover {
+  background: linear-gradient(135deg, #ffa07a, #ff8080);
+  box-shadow: 0 6px 20px rgba(255, 128, 128, 0.6);
+}
+
+body.neon #clearLeaderboardBtn {
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #000000;
+}
+#playAgainBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 10px 5px;
+  font-family: "Rubik", sans-serif;
+  background: linear-gradient(135deg, #40c4ff, #0288d1);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(64, 196, 255, 0.4);
+}
+
+#playAgainBtn:hover {
+  background: linear-gradient(135deg, #0288d1, #40c4ff);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(64, 196, 255, 0.6);
+}
+
+body.light #playAgainBtn {
+  background: linear-gradient(135deg, #81d4fa, #4fc3f7);
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(129, 212, 250, 0.4);
+}
+
+body.light #playAgainBtn:hover {
+  background: linear-gradient(135deg, #4fc3f7, #81d4fa);
+  box-shadow: 0 6px 20px rgba(129, 212, 250, 0.6);
+}
+
+body.neon #playAgainBtn {
+  background: linear-gradient(135deg, #40c4ff, #0288d1);
+  color: #000000;
 }
