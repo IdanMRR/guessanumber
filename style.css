@@ -29,7 +29,7 @@ body {
   animation: gradient 20s ease infinite;
   transition: background 0.5s ease, color 0.5s ease;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 body::before {
@@ -65,6 +65,24 @@ body.space {
   --button-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
 }
 
+/* Ensure RGB waves override all gradients and animations */
+body.rgb {
+  background: none !important;
+  background-image: none !important;
+  animation: none !important;
+  transition: background-color 0.5s ease;
+}
+
+/* Ensure theme gradients are overridden when RGB is active */
+body.rgb.dark,
+body.rgb.light,
+body.rgb.neon,
+body.rgb.space {
+  background: none !important;
+  background-image: none !important;
+  animation: none !important;
+}
+
 @keyframes gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -94,7 +112,7 @@ button:hover {
 
 @keyframes glow {
   0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.3); }
-  50% { box-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 0.5); }
   100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.3); }
 }
 
@@ -104,7 +122,7 @@ body.light button:hover {
 
 @keyframes glow-light {
   0% { box-shadow: 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.2); }
-  50% { box-shadow: 0 0 15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 0, 0, 0.3); }
+  50% { box-shadow: 0 0 10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 0, 0, 0.3); }
   100% { box-shadow: 0 0 5px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.2); }
 }
 
@@ -114,7 +132,7 @@ body.neon button:hover {
 
 @keyframes glow-neon {
   0% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3); }
-  50% { box-shadow: 0 0 15px rgba(0, 255, 255, 1), 0 0 20px rgba(0, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 15px rgba(0, 255, 255, 0.5); }
   100% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.5), 0 0 10px rgba(0, 255, 255, 0.3); }
 }
 
@@ -124,7 +142,7 @@ body.space button:hover {
 
 @keyframes glow-space {
   0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.3); }
-  50% { box-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 20px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 0.5); }
   100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), 0 0 10px rgba(255, 255, 255, 0.3); }
 }
 
@@ -134,7 +152,7 @@ button:active {
 
 @keyframes bounce-button {
   0% { transform: scale(1); }
-  50% { transform: scale(0.9); }
+  50% { transform: scale(0.95); }
   100% { transform: scale(1); }
 }
 
@@ -179,12 +197,13 @@ li:focus {
   background: rgba(0, 0, 0, 0.5);
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.3s ease;
   z-index: 1000;
   font-family: "Rubik", sans-serif;
+  touch-action: manipulation;
 }
 
 #settingsBtn {
@@ -231,6 +250,8 @@ body.neon #statsBtn:hover {
   transition: background-color 0.5s ease, box-shadow 0.5s ease;
   outline: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(5px);
+  width: 100%;
+  margin: 0 auto;
 }
 
 body.light #gameArea {
@@ -257,21 +278,194 @@ h1 {
   text-shadow: var(--text-shadow);
 }
 
-/* חלק 5: עיצוב בחירת רמת קושי */
-#difficultySection,
-#modeSection {
+/* Game Selection Menu */
+.game-selection {
   margin: 20px 0;
-  position: relative;
 }
 
-#difficultySection label,
-#modeSection label {
+.game-selection h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.game-selection button {
+  padding: 12px 24px;
   font-size: 18px;
-  margin-left: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1e90ff, #00b7eb);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: var(--button-shadow);
+  min-width: 48px;
+  min-height: 48px;
 }
 
-#difficulty,
-#gameMode {
+.game-selection button:hover {
+  background: linear-gradient(135deg, #00b7eb, #1e90ff);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 144, 255, 0.6);
+}
+
+body.light .game-selection button {
+  background: linear-gradient(135deg, #87cefa, #b0e0e6);
+  color: #333333;
+}
+
+body.light .game-selection button:hover {
+  background: linear-gradient(135deg, #b0e0e6, #87cefa);
+  box-shadow: 0 6px 20px rgba(135, 206, 250, 0.6);
+}
+
+body.neon .game-selection button {
+  background: linear-gradient(135deg, #00ced1, #40e0d0);
+  color: #000000;
+}
+
+body.neon .game-selection button:hover {
+  background: linear-gradient(135deg, #40e0d0, #00ced1);
+  box-shadow: 0 6px 20px rgba(0, 206, 209, 0.7);
+}
+
+/* Game Sections */
+.game-section {
+  display: block;
+}
+
+.game-section.hidden {
+  display: none;
+}
+
+/* Memory Match Game */
+.memory-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+  justify-items: center;
+}
+
+.memory-card {
+  width: 60px;
+  height: 60px;
+  background-color: #4a90e2;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  user-select: none;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.memory-card.flipped {
+  background-color: #ffffff;
+  transform: rotateY(180deg);
+}
+
+.memory-card.matched {
+  background-color: #50c878;
+}
+
+body.light .memory-card {
+  background-color: #87cefa;
+}
+
+body.light .memory-card.flipped {
+  background-color: #e0e0e0;
+}
+
+body.light .memory-card.matched {
+  background-color: #b3e6b3;
+}
+
+body.neon .memory-card {
+  background-color: #00ced1;
+}
+
+body.neon .memory-card.flipped {
+  background-color: #00ffcc;
+}
+
+body.neon .memory-card.matched {
+  background-color: #00ff00;
+}
+
+/* Trivia Game */
+.trivia-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.trivia-option {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1e90ff, #00b7eb);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: var(--button-shadow);
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.trivia-option:hover {
+  background: linear-gradient(135deg, #00b7eb, #1e90ff);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 144, 255, 0.6);
+}
+
+.trivia-option.correct {
+  background: linear-gradient(135deg, #50c878, #32cd32);
+}
+
+.trivia-option.incorrect {
+  background: linear-gradient(135deg, #e94e77, #ff4040);
+}
+
+body.light .trivia-option {
+  background: linear-gradient(135deg, #87cefa, #b0e0e6);
+  color: #333333;
+}
+
+body.light .trivia-option:hover {
+  background: linear-gradient(135deg, #b0e0e6, #87cefa);
+  box-shadow: 0 6px 20px rgba(135, 206, 250, 0.6);
+}
+
+body.neon .trivia-option {
+  background: linear-gradient(135deg, #00ced1, #40e0d0);
+  color: #000000;
+}
+
+body.neon .trivia-option:hover {
+  background: linear-gradient(135deg, #40e0d0, #00ced1);
+  box-shadow: 0 6px 20px rgba(0, 206, 209, 0.7);
+}
+
+/* Admin Panel */
+.admin-section {
+  margin: 15px 0;
+}
+
+.admin-section h4 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+#adminUserSelect,
+#adminBanUserSelect {
   padding: 8px;
   font-size: 16px;
   border-radius: 5px;
@@ -280,17 +474,146 @@ h1 {
   color: #ffffff;
   transition: background 0.3s ease, border 0.3s ease;
   font-family: "Rubik", sans-serif;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+body.light #adminUserSelect,
+body.light #adminBanUserSelect {
+  border: 1px solid #333333;
+  background: rgba(255, 255, 255, 0.3);
+  color: #333333;
+}
+
+body.neon #adminUserSelect,
+body.neon #adminBanUserSelect {
+  border: 1px solid #00ffcc;
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffcc;
+}
+
+#banUserBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+  margin-top: 10px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+#banUserBtn:hover {
+  background: linear-gradient(135deg, #ff6347, #ff4040);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.light #banUserBtn {
+  background: linear-gradient(135deg, #ff8080, #ffa07a);
+  color: #333333;
+}
+
+body.light #banUserBtn:hover {
+  background: linear-gradient(135deg, #ffa07a, #ff8080);
+  box-shadow: 0 6px 20px rgba(255, 128, 128, 0.6);
+}
+
+body.neon #banUserBtn {
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #000000;
+}
+
+#resetLeaderboardBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+  min-width: 48px;
+  min-height: 48px;
+}
+
+#resetLeaderboardBtn:hover {
+  background: linear-gradient(135deg, #ff6347, #ff4040);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.light #resetLeaderboardBtn {
+  background: linear-gradient(135deg, #ff8080, #ffa07a);
+  color: #333333;
+}
+
+body.light #resetLeaderboardBtn:hover {
+  background: linear-gradient(135deg, #ffa07a, #ff8080);
+  box-shadow: 0 6px 20px rgba(255, 128, 128, 0.6);
+}
+
+body.neon #resetLeaderboardBtn {
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #000000;
+}
+
+/* חלק 5: עיצוב בחירת רמת קושי */
+#difficultySection,
+#modeSection,
+#memoryDifficultySection,
+#triviaCategorySection {
+  margin: 20px 0;
+  position: relative;
+}
+
+#difficultySection label,
+#modeSection label,
+#memoryDifficultySection label,
+#triviaCategorySection label {
+  font-size: 18px;
+  margin-left: 10px;
+}
+
+#difficulty,
+#gameMode,
+#memoryDifficulty,
+#triviaCategory,
+#rgbSpeed {
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ffffff;
+  background: rgba(0, 0, 0, 0.3);
+  color: #ffffff;
+  transition: background 0.3s ease, border 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 body.light #difficulty,
-body.light #gameMode {
+body.light #gameMode,
+body.light #memoryDifficulty,
+body.light #triviaCategory,
+body.light #rgbSpeed {
   border: 1px solid #333333;
   background: rgba(255, 255, 255, 0.3);
   color: #333333;
 }
 
 body.neon #difficulty,
-body.neon #gameMode {
+body.neon #gameMode,
+body.neon #memoryDifficulty,
+body.neon #triviaCategory,
+body.neon #rgbSpeed {
   border: 1px solid #00ffcc;
   background: rgba(0, 255, 255, 0.1);
   color: #00ffcc;
@@ -317,7 +640,11 @@ body.neon .new-arrow {
 /* חלק 6: עיצוב שיא אישי וטיימרים */
 #highscore,
 #timer,
-#idleTimer {
+#idleTimer,
+#memoryTimer,
+#memoryMoves,
+#triviaScore,
+#triviaTimer {
   font-size: 18px;
   margin: 10px 0;
   text-shadow: var(--text-shadow);
@@ -329,7 +656,12 @@ body.neon .new-arrow {
 #viewStatsBtn,
 #viewAchievementsBtn,
 #viewLeaderboardBtn,
-.restartBtn {
+.playAgainBtn,
+#startMemoryMatchBtn,
+#restartMemoryMatchBtn,
+#startTriviaBtn,
+#restartTriviaBtn,
+#rgbBtn {
   padding: 12px 24px;
   font-size: 18px;
   margin: 10px 5px;
@@ -343,6 +675,9 @@ body.neon .new-arrow {
   box-shadow: var(--button-shadow);
   position: relative;
   overflow: hidden;
+  min-width: 48px;
+  min-height: 48px;
+  touch-action: manipulation;
 }
 
 #startGameBtn:hover,
@@ -350,7 +685,12 @@ body.neon .new-arrow {
 #viewStatsBtn:hover,
 #viewAchievementsBtn:hover,
 #viewLeaderboardBtn:hover,
-.restartBtn:hover {
+.playAgainBtn:hover,
+#startMemoryMatchBtn:hover,
+#restartMemoryMatchBtn:hover,
+#startTriviaBtn:hover,
+#restartTriviaBtn:hover,
+#rgbBtn:hover {
   background: linear-gradient(135deg, #00b7eb, #1e90ff);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(30, 144, 255, 0.6);
@@ -361,7 +701,12 @@ body.light #stopGameBtn,
 body.light #viewStatsBtn,
 body.light #viewAchievementsBtn,
 body.light #viewLeaderboardBtn,
-body.light .restartBtn {
+body.light .playAgainBtn,
+body.light #startMemoryMatchBtn,
+body.light #restartMemoryMatchBtn,
+body.light #startTriviaBtn,
+body.light #restartTriviaBtn,
+body.light #rgbBtn {
   background: linear-gradient(135deg, #87cefa, #b0e0e6);
   color: #333333;
 }
@@ -371,7 +716,12 @@ body.light #stopGameBtn:hover,
 body.light #viewStatsBtn:hover,
 body.light #viewAchievementsBtn:hover,
 body.light #viewLeaderboardBtn:hover,
-body.light .restartBtn:hover {
+body.light .playAgainBtn:hover,
+body.light #startMemoryMatchBtn:hover,
+body.light #restartMemoryMatchBtn:hover,
+body.light #startTriviaBtn:hover,
+body.light #restartTriviaBtn:hover,
+body.light #rgbBtn:hover {
   background: linear-gradient(135deg, #b0e0e6, #87cefa);
   box-shadow: 0 6px 20px rgba(135, 206, 250, 0.6);
 }
@@ -381,7 +731,12 @@ body.neon #stopGameBtn,
 body.neon #viewStatsBtn,
 body.neon #viewAchievementsBtn,
 body.neon #viewLeaderboardBtn,
-body.neon .restartBtn {
+body.neon .playAgainBtn,
+body.neon #startMemoryMatchBtn,
+body.neon #restartMemoryMatchBtn,
+body.neon #startTriviaBtn,
+body.neon #restartTriviaBtn,
+body.neon #rgbBtn {
   background: linear-gradient(135deg, #00ced1, #40e0d0);
   color: #000000;
 }
@@ -391,7 +746,12 @@ body.neon #stopGameBtn:hover,
 body.neon #viewStatsBtn:hover,
 body.neon #viewAchievementsBtn:hover,
 body.neon #viewLeaderboardBtn:hover,
-body.neon .restartBtn:hover {
+body.neon .playAgainBtn:hover,
+body.neon #startMemoryMatchBtn:hover,
+body.neon #restartMemoryMatchBtn:hover,
+body.neon #startTriviaBtn:hover,
+body.neon #restartTriviaBtn:hover,
+body.neon #rgbBtn:hover {
   background: linear-gradient(135deg, #40e0d0, #00ced1);
   box-shadow: 0 6px 20px rgba(0, 206, 209, 0.7);
 }
@@ -440,6 +800,8 @@ body.neon #stopGameBtn {
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
   font-family: "Rubik", sans-serif;
   box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 body.light #guessInput {
@@ -468,6 +830,9 @@ body.neon #guessInput {
   box-shadow: var(--button-shadow);
   position: relative;
   overflow: hidden;
+  min-width: 48px;
+  min-height: 48px;
+  touch-action: manipulation;
 }
 
 #guessButton {
@@ -530,7 +895,9 @@ body.neon #hintButton {
 }
 
 /* חלק 9: עיצוב הודעות והלבבות */
-#message {
+#message,
+#memoryMessage,
+#triviaMessage {
   font-size: 18px;
   margin: 15px 0;
   min-height: 24px;
@@ -545,12 +912,16 @@ body.neon #hintButton {
   color: red;
 }
 
-#message.success {
+#message.success,
+#memoryMessage.success,
+#triviaMessage.success {
   color: #50c878;
   animation: fadeIn 0.5s ease;
 }
 
-#message.fail {
+#message.fail,
+#memoryMessage.fail,
+#triviaMessage.fail {
   color: #e94e77;
   animation: fadeIn 0.5s ease;
 }
@@ -605,7 +976,7 @@ body.neon #hintButton {
 /* Label styling */
 .color-picker-wrapper label {
   font-size: 14px;
-  color: #ffffff; /* Adjust based on theme */
+  color: #ffffff;
   margin-bottom: 5px;
   font-weight: bold;
 }
@@ -636,7 +1007,7 @@ input[type="color"]::-webkit-color-swatch {
 
 /* Add a border around the color swatch */
 input[type="color"]::-webkit-color-swatch {
-  border: 2px solid #ffffff; /* White border for visibility */
+  border: 2px solid #ffffff;
 }
 
 /* Hover effect */
@@ -659,7 +1030,8 @@ body.neon .color-picker-wrapper label {
 #settingsMenu,
 #statsMenu,
 #achievementsMenu,
-#leaderboardMenu {
+#leaderboardMenu,
+#adminPanel {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -674,10 +1046,12 @@ body.neon .color-picker-wrapper label {
 #settingsMenu:not(.hidden),
 #statsMenu:not(.hidden),
 #achievementsMenu:not(.hidden),
-#leaderboardMenu:not(.hidden) {
+#leaderboardMenu:not(.hidden),
+#adminPanel:not(.hidden) {
   display: block;
   z-index: 1000;
 }
+
 #adminPasswordSection {
   margin-top: 10px;
 }
@@ -700,6 +1074,8 @@ body.neon .color-picker-wrapper label {
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
   font-family: "Rubik", sans-serif;
   box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 body.light #adminPasswordInput {
@@ -715,6 +1091,7 @@ body.neon #adminPasswordInput {
   color: #00ffcc;
   box-shadow: 0 2px 10px rgba(0, 255, 255, 0.3);
 }
+
 .menuArea {
   max-width: 450px;
   padding: 25px;
@@ -773,6 +1150,8 @@ h3 {
   border-radius: 5px;
   background: #ffffff;
   transition: background 0.3s ease;
+  min-height: 48px;
+  touch-action: manipulation;
 }
 
 body.light #volumeControl {
@@ -795,6 +1174,8 @@ body.neon #volumeControl {
   color: #ffffff;
   transition: background 0.3s ease, border 0.3s ease;
   font-family: "Rubik", sans-serif;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 body.light #themeSelect,
@@ -904,6 +1285,8 @@ body.neon #applyGradientBtn {
   box-shadow: var(--button-shadow);
   position: relative;
   overflow: hidden;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #muteBtn {
@@ -959,6 +1342,8 @@ body.neon #vibrationBtn {
   transition: background-color 0.5s ease, box-shadow 0.5s ease;
   outline: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(5px);
+  width: 100%;
+  margin: 0 auto;
 }
 
 body.light #usernameSection {
@@ -991,6 +1376,8 @@ body.neon #usernameSection {
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
   font-family: "Rubik", sans-serif;
   box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 body.light #usernameInput {
@@ -1019,6 +1406,8 @@ body.neon #usernameInput {
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   font-family: "Rubik", sans-serif;
   box-shadow: var(--button-shadow);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #submitUsernameBtn:hover {
@@ -1047,7 +1436,8 @@ body.neon #submitUsernameBtn {
 #backToGameFromStats,
 #resetStatsBtn,
 #backToGameFromAchievements,
-#backToGameFromLeaderboard {
+#backToGameFromLeaderboard,
+#backToGameFromAdmin {
   padding: 10px 20px;
   font-size: 16px;
   border: none;
@@ -1059,12 +1449,15 @@ body.neon #submitUsernameBtn {
   box-shadow: var(--button-shadow);
   position: relative;
   overflow: hidden;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #backToGame,
 #backToGameFromStats,
 #backToGameFromAchievements,
-#backToGameFromLeaderboard {
+#backToGameFromLeaderboard,
+#backToGameFromAdmin {
   background: linear-gradient(135deg, #1e90ff, #00b7eb);
   color: #ffffff;
 }
@@ -1072,7 +1465,8 @@ body.neon #submitUsernameBtn {
 #backToGame:hover,
 #backToGameFromStats:hover,
 #backToGameFromAchievements:hover,
-#backToGameFromLeaderboard:hover {
+#backToGameFromLeaderboard:hover,
+#backToGameFromAdmin:hover {
   background: linear-gradient(135deg, #00b7eb, #1e90ff);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(30, 144, 255, 0.6);
@@ -1093,7 +1487,8 @@ body.neon #submitUsernameBtn {
 body.light #backToGame,
 body.light #backToGameFromStats,
 body.light #backToGameFromAchievements,
-body.light #backToGameFromLeaderboard {
+body.light #backToGameFromLeaderboard,
+body.light #backToGameFromAdmin {
   background: linear-gradient(135deg, #87cefa, #b0e0e6);
   color: #333333;
 }
@@ -1106,7 +1501,8 @@ body.light #resetStatsBtn {
 body.neon #backToGame,
 body.neon #backToGameFromStats,
 body.neon #backToGameFromAchievements,
-body.neon #backToGameFromLeaderboard {
+body.neon #backToGameFromLeaderboard,
+body.neon #backToGameFromAdmin {
   background: linear-gradient(135deg, #00ced1, #40e0d0);
   color: #000000;
 }
@@ -1394,23 +1790,37 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   #difficultySection label,
   #modeSection label,
   .settings-section label,
-  .sort-options label {
+  .sort-options label,
+  #memoryDifficultySection label,
+  #triviaCategorySection label,
+  .admin-section label {
     font-size: 16px;
   }
 
   #difficulty,
   #gameMode,
+  #memoryDifficulty,
+  #triviaCategory,
   #themeSelect,
   #confettiType,
   #confettiAmount,
-  #sortStats {
+  #sortStats,
+  #rgbSpeed,
+  #adminUserSelect,
+  #adminBanUserSelect {
     font-size: 14px;
-    padding: 6px;
+    padding: 8px;
+    min-width: 48px;
+    min-height: 48px;
   }
 
-  #guessInput {
+  #guessInput,
+  #usernameInput,
+  #adminPasswordInput {
     width: 100px;
     font-size: 14px;
+    min-width: 48px;
+    min-height: 48px;
   }
 
   #guessButton,
@@ -1428,15 +1838,27 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   #resetStatsBtn,
   #backToGameFromAchievements,
   #backToGameFromLeaderboard,
-  #applyGradientBtn {
+  #applyGradientBtn,
+  #resetGradientBtn,
+  #playAgainBtn,
+  #startMemoryMatchBtn,
+  #restartMemoryMatchBtn,
+  #startTriviaBtn,
+  #restartTriviaBtn,
+  #rgbBtn,
+  #banUserBtn,
+  #resetLeaderboardBtn,
+  #backToGameFromAdmin {
     font-size: 14px;
-    padding: 8px 16px;
+    padding: 10px 16px;
+    min-width: 48px;
+    min-height: 48px;
   }
 
   #settingsBtn,
   #statsBtn {
-    width: 35px;
-    height: 35px;
+    width: 48px;
+    height: 48px;
     font-size: 20px;
   }
 
@@ -1445,12 +1867,15 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   }
 
   #statsBtn {
-    right: 60px;
+    right: 70px;
   }
 
-  #inputContainer {
+  #inputContainer,
+  .game-selection,
+  .trivia-options {
     flex-direction: column;
     gap: 8px;
+    align-items: center;
   }
 
   #detailedStatsList,
@@ -1461,6 +1886,19 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
 
   #statsChart {
     max-height: 200px;
+  }
+
+  .memory-board {
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 8px;
+  }
+
+  .memory-card {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    min-width: 48px;
+    min-height: 48px;
   }
 }
 
@@ -1478,7 +1916,13 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   #idleTimer,
   #message,
   #averageTime,
-  #successRate {
+  #successRate,
+  #memoryTimer,
+  #memoryMoves,
+  #triviaScore,
+  #triviaTimer,
+  #memoryMessage,
+  #triviaMessage {
     font-size: 14px;
   }
 
@@ -1490,6 +1934,14 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   .color-swatch {
     width: 35px;
     height: 35px;
+  }
+
+  .memory-card {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+    min-width: 48px;
+    min-height: 48px;
   }
 }
 
@@ -1514,7 +1966,11 @@ body.neon :focus {
   .sparkle,
   .heart,
   #message.success,
-  #message.fail {
+  #message.fail,
+  #memoryMessage.success,
+  #memoryMessage.fail,
+  #triviaMessage.success,
+  #triviaMessage.fail {
     animation: none !important;
   }
 
@@ -1538,7 +1994,16 @@ body.neon :focus {
   #averageTime:hover,
   #successRate:hover,
   #sortStats:hover,
-  .color-swatch:hover {
+  .color-swatch:hover,
+  #playAgainBtn:hover,
+  #startMemoryMatchBtn:hover,
+  #restartMemoryMatchBtn:hover,
+  #startTriviaBtn:hover,
+  #restartTriviaBtn:hover,
+  #rgbBtn:hover,
+  #banUserBtn:hover,
+  #resetLeaderboardBtn:hover,
+  #backToGameFromAdmin:hover {
     transform: none !important;
   }
 }
@@ -1557,6 +2022,8 @@ body.neon :focus {
   display: block;
   width: 100%;
   box-sizing: border-box;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #changeUsernameBtn:hover {
@@ -1606,7 +2073,7 @@ body.neon :focus {
   display: flex;
   justify-content: center;
   gap: 10px;
-  z-index: 2100; /* Ensure buttons are above the dialog background */
+  z-index: 2100;
 }
 
 .confirmation-buttons button {
@@ -1619,7 +2086,9 @@ body.neon :focus {
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.1s ease;
-  pointer-events: auto; /* Ensure buttons can be clicked */
+  pointer-events: auto;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 .confirmation-buttons button:hover {
@@ -1652,14 +2121,13 @@ body.neon :focus {
     margin-left: 10px;
   }
 
-  /* Ensure buttons are still clickable */
   select, button, #guessInput {
     font-size: 14px;
     padding: 8px;
   }
 
   #guessInput {
-    width: 80px; /* Adjust width for better fit */
+    width: 80px;
     margin-right: 5px;
   }
 
@@ -1682,6 +2150,8 @@ body.neon :focus {
   transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   font-family: "Rubik", sans-serif;
   box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #cancelUsernameBtn:hover {
@@ -1719,6 +2189,8 @@ body.neon #cancelUsernameBtn {
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
   margin-left: 10px;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #resetGradientBtn:hover {
@@ -1744,7 +2216,6 @@ body.neon #resetGradientBtn {
 }
 
 /* Prevent text selection on non-interactive text elements to avoid blinking cursor */
-/* Prevent text selection on non-interactive text elements to avoid blinking cursor */
 #gameArea h1,
 #gameArea p,
 #gameArea label,
@@ -1763,7 +2234,11 @@ body.neon #resetGradientBtn {
 #achievementsList li,
 #leaderboardList li,
 #detailedStatsList li,
-#confirmationDialog h3 {
+#confirmationDialog h3,
+#adminPanel h3,
+#adminPanel h4,
+#adminPanel p,
+#adminPanel label {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -1801,6 +2276,8 @@ select {
   background: linear-gradient(135deg, #ff4040, #ff6347);
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #clearLeaderboardBtn:hover {
@@ -1824,6 +2301,7 @@ body.neon #clearLeaderboardBtn {
   background: linear-gradient(135deg, #ff4040, #ff6347);
   color: #000000;
 }
+
 #playAgainBtn {
   padding: 10px 20px;
   font-size: 16px;
@@ -1836,6 +2314,8 @@ body.neon #clearLeaderboardBtn {
   background: linear-gradient(135deg, #40c4ff, #0288d1);
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(64, 196, 255, 0.4);
+  min-width: 48px;
+  min-height: 48px;
 }
 
 #playAgainBtn:hover {

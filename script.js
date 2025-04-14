@@ -1,31 +1,17 @@
-const DB_NAME = "GuessingGameDB";
-const DB_VERSION = 1;
-const STORE_NAME = "leaderboard";
+// Firebase Configuration (Replace with your Firebase config)
+const firebaseConfig = {
+  apiKey: "AIzaSyBzzTwllahtyNSFkEoWByEWqbVfS8ZeMVw",
+  authDomain: "first-ai-game-ca35b.firebaseapp.com",
+  databaseURL: "https://first-ai-game-ca35b-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "first-ai-game-ca35b",
+  storageBucket: "first-ai-game-ca35b.firebasestorage.app",
+  messagingSenderId: "323571879533",
+  appId: "1:323571879533:web:36731104b3b87008aaf964",
+  measurementId: "G-QTJ9REPVDG"
+};
 
-let db;
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "username" });
-      }
-    };
-
-    request.onsuccess = (event) => {
-      db = event.target.result;
-      resolve(db);
-    };
-
-    request.onerror = (event) => {
-      console.error("Error opening IndexedDB:", event.target.error);
-      reject(event.target.error);
-    };
-  });
-}
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
 // DOM Elements
 const gameArea = document.getElementById("gameArea");
@@ -33,12 +19,20 @@ const settingsMenu = document.getElementById("settingsMenu");
 const statsMenu = document.getElementById("statsMenu");
 const achievementsMenu = document.getElementById("achievementsMenu");
 const leaderboardMenu = document.getElementById("leaderboardMenu");
+const adminPanel = document.getElementById("adminPanel");
 const usernameSection = document.getElementById("usernameSection");
 const usernameInput = document.getElementById("usernameInput");
 const adminPasswordSection = document.getElementById("adminPasswordSection");
 const adminPasswordInput = document.getElementById("adminPasswordInput");
 const submitUsernameBtn = document.getElementById("submitUsernameBtn");
 const cancelUsernameBtn = document.getElementById("cancelUsernameBtn");
+const gameSelection = document.getElementById("gameSelection");
+const selectNumberGuessBtn = document.getElementById("selectNumberGuessBtn");
+const selectMemoryMatchBtn = document.getElementById("selectMemoryMatchBtn");
+const selectTriviaBtn = document.getElementById("selectTriviaBtn");
+const numberGuessGame = document.getElementById("numberGuessGame");
+const memoryMatchGame = document.getElementById("memoryMatchGame");
+const triviaGame = document.getElementById("triviaGame");
 const difficultySelect = document.getElementById("difficulty");
 const gameModeSelect = document.getElementById("gameMode");
 const highscoreDisplay = document.getElementById("highscore");
@@ -53,6 +47,22 @@ const message = document.getElementById("message");
 const livesDisplay = document.getElementById("livesDisplay");
 const timerDisplay = document.getElementById("timer");
 const idleTimerDisplay = document.getElementById("idleTimer");
+const memoryDifficultySelect = document.getElementById("memoryDifficulty");
+const startMemoryMatchBtn = document.getElementById("startMemoryMatchBtn");
+const memoryBoard = document.getElementById("memoryBoard");
+const memoryMessage = document.getElementById("memoryMessage");
+const memoryTimer = document.getElementById("memoryTimer");
+const memoryMoves = document.getElementById("memoryMoves");
+const restartMemoryMatchBtn = document.getElementById("restartMemoryMatchBtn");
+const triviaCategorySelect = document.getElementById("triviaCategory");
+const startTriviaBtn = document.getElementById("startTriviaBtn");
+const triviaQuestion = document.getElementById("triviaQuestion");
+const triviaQuestionText = document.getElementById("triviaQuestionText");
+const triviaOptions = document.getElementById("triviaOptions");
+const triviaMessage = document.getElementById("triviaMessage");
+const triviaScore = document.getElementById("triviaScore");
+const triviaTimer = document.getElementById("triviaTimer");
+const restartTriviaBtn = document.getElementById("restartTriviaBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const statsBtn = document.getElementById("statsBtn");
 const viewStatsBtn = document.getElementById("viewStatsBtn");
@@ -70,11 +80,13 @@ const gradientColor1 = document.getElementById("gradientColor1");
 const gradientColor2 = document.getElementById("gradientColor2");
 const applyGradientBtn = document.getElementById("applyGradientBtn");
 const resetGradientBtn = document.getElementById("resetGradientBtn");
+const rgbBtn = document.getElementById("rgbBtn");
 const vibrationSupportMessage = document.getElementById("vibrationSupportMessage");
 const backToGameBtn = document.getElementById("backToGame");
 const backToGameFromStatsBtn = document.getElementById("backToGameFromStats");
 const backToGameFromAchievementsBtn = document.getElementById("backToGameFromAchievements");
 const backToGameFromLeaderboardBtn = document.getElementById("backToGameFromLeaderboard");
+const backToGameFromAdminBtn = document.getElementById("backToGameFromAdmin");
 const resetStatsBtn = document.getElementById("resetStatsBtn");
 const sortStatsSelect = document.getElementById("sortStats");
 const averageTimeDisplay = document.getElementById("averageTime");
@@ -85,43 +97,12 @@ const leaderboardList = document.getElementById("leaderboardList");
 const statsChartCanvas = document.getElementById("statsChart");
 const confirmationDialog = document.getElementById("confirmationDialog");
 const confirmationMessage = document.getElementById("confirmationMessage");
-
-const ADMIN_PASSWORD = "Ghsi1231210";
-
-// Mode translations for Hebrew display
-const modeTranslations = {
-  "normal": "רגיל",
-  "fast": "מהיר (30 שניות)",
-  "noHints": "בלי רמזים",
-  "dynamicRange": "טווח משתנה"
-};
-
-// Game State
-let secretNumber = 0;
-let lives = 3;
-let maxLives = 3;
-let guesses = 0;
-let timer = 0;
-let timerInterval = null;
-let idleTimer = 0;
-let idleInterval = null;
-let gameActive = false;
-let hintsUsed = 0;
-let hintUsedThisGame = false; // Track if hint has been used in the current game
-let highscore = 0;
-let username = "";
-let isAdmin = false;
-let stats = { gamesPlayed: 0, wins: 0, totalGuesses: 0, totalTime: 0, playerStats: [] };
-let achievements = [
-  { id: 1, name: "ניצחון ראשון", description: "נצח במשחק הראשון שלך", condition: (stats) => stats.wins >= 1, reward: "theme", rewardValue: "space" },
-  { id: 2, name: "מהיר כמו ברק", description: "נצח תוך פחות מ-10 שניות", condition: (stats) => stats.playerStats.some(game => game.time < 10 && game.won), reward: "confetti", rewardValue: "butterflies" },
-  { id: 3, name: "מומחה ניחושים", description: "נצח 5 משחקים", condition: (stats) => stats.wins >= 5 },
-  { id: 4, name: "בלי עזרה", description: "נצח במצב 'בלי רמזים'", condition: (stats) => stats.playerStats.some(game => game.mode === "noHints" && game.won) },
-  { id: 5, name: "מאסטר קושי", description: "נצח במצב קשה", condition: (stats) => stats.playerStats.some(game => game.difficulty === 100 && game.won) }
-];
-let unlockedThemes = ["dark", "light", "neon"];
-let unlockedConfetti = ["default", "stars", "hearts", "none"];
-let statsChart = null;
+const adminUserSelect = document.getElementById("adminUserSelect");
+const adminUserPoints = document.getElementById("adminUserPoints");
+const adminBanUserSelect = document.getElementById("adminBanUserSelect");
+const banUserBtn = document.getElementById("banUserBtn");
+const adminBanMessage = document.getElementById("adminBanMessage");
+const resetLeaderboardBtn = document.getElementById("resetLeaderboardBtn");
 
 // Sound Manager
 class SoundManager {
@@ -146,8 +127,7 @@ class SoundManager {
         audio.currentTime = 0;
         audio.play().catch(err => {
           console.error(`Failed to play ${sound} sound:`, err);
-          message.textContent = "שגיאה בניגון צליל. בדוק את חיבור האינטרנט או הגדרות השמע.";
-          message.classList.add("fail");
+          showMessage("שגיאה בניגון צליל. בדוק את חיבור האינטרנט או הגדרות השמע.");
         });
       }
     }
@@ -206,29 +186,92 @@ class VibrationManager {
     vibrationSupportMessage.textContent = this.supported ? "רטט נתמך במכשיר זה" : "רטט אינו נתמך במכשיר זה";
   }
 }
-
 const vibrationManager = new VibrationManager();
 
-// Clear Leaderboard (Admin Only)
-function clearLeaderboard() {
-  const transaction = db.transaction([STORE_NAME], "readwrite");
-  const store = transaction.objectStore(STORE_NAME);
-  
-  const clearRequest = store.clear();
 
-  clearRequest.onsuccess = () => {
-    console.log("Leaderboard cleared successfully");
-    displayLeaderboard();
-    showMessage("הדירוג נוקה בהצלחה!", () => {});
-  };
+// Game State
+const ADMIN_PASSWORD = "Ghsi1231210";
+let currentGame = "numberGuess";
+let username = "";
+let isAdmin = false;
+let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
+let statsChart = null;
+let rgbInterval = null;
+let hue = 0;
 
-  clearRequest.onerror = (event) => {
-    console.error("Error clearing leaderboard:", event.target.error);
-    showMessage("שגיאה בניקוי הדירוג: " + (event.target.error.message || "תקלה לא ידועה"), () => {});
-  };
-}
+// Number Guessing Game State
+let secretNumber = 0;
+let lives = 3;
+let maxLives = 3;
+let guesses = 0;
+let timer = 0;
+let timerInterval = null;
+let idleTimer = 0;
+let idleInterval = null;
+let gameActive = false;
+let hintsUsed = 0;
+let hintUsedThisGame = false;
+let highscore = 0;
 
-// Load Saved Settings
+// Memory Match Game State
+let memoryCards = [];
+let memoryFlippedCards = [];
+let memoryMatchesFound = 0;
+let memoryGameActive = false;
+let memoryTimerInterval = null;
+
+// Trivia Game State
+let triviaQuestions = {
+  general: [
+    { question: "מי המציא את הנורה?", options: ["תומאס אדיסון", "אלכסנדר גרהם בל", "מייקל פאראדיי", "ניקולה טסלה"], answer: "תומאס אדיסון" },
+    { question: "מהי בירת צרפת?", options: ["פריז", "לונדון", "ברלין", "רומא"], answer: "פריז" }
+  ],
+  history: [
+    { question: "מי היה ראש הממשלה הראשון של ישראל?", options: ["דוד בן-גוריון", "מנחם בגין", "יצחק רבין", "שמעון פרס"], answer: "דוד בן-גוריון" },
+    { question: "באיזו שנה הסתיימה מלחמת העולם השנייה?", options: ["1945", "1939", "1941", "1950"], answer: "1945" }
+  ],
+  science: [
+    { question: "מהו היסוד הכימי עם הסמל H?", options: ["מימן", "חמצן", "פחמן", "חנקן"], answer: "מימן" },
+    { question: "מי גילה את כוח הכבידה?", options: ["אייזק ניוטון", "אלברט איינשטיין", "גלילאו גליליי", "מייקל פאראדיי"], answer: "אייזק ניוטון" }
+  ]
+};
+let triviaCurrentQuestion = 0;
+let triviaScoreValue = 0;
+let triviaGameActive = false;
+let triviaTimerInterval = null;
+
+// Stats and Achievements
+let stats = { gamesPlayed: 0, wins: 0, totalGuesses: 0, totalTime: 0, playerStats: [] };
+let achievements = [
+  { id: 1, name: "ניצחון ראשון", description: "נצח במשחק הראשון שלך", condition: (stats) => stats.wins >= 1, reward: "theme", rewardValue: "space", unlocked: false },
+  { id: 2, name: "מהיר כמו ברק", description: "נצח תוך פחות מ-10 שניות", condition: (stats) => stats.playerStats.some(game => game.time < 10 && game.won), reward: "confetti", rewardValue: "butterflies", unlocked: false },
+  { id: 3, name: "מומחה ניחושים", description: "נצח 5 משחקים", condition: (stats) => stats.wins >= 5, unlocked: false },
+  { id: 4, name: "בלי עזרה", description: "נצח במצב 'בלי רמזים'", condition: (stats) => stats.playerStats.some(game => game.mode === "noHints" && game.won), unlocked: false },
+  { id: 5, name: "מאסטר קושי", description: "נצח במצב קשה", condition: (stats) => stats.playerStats.some(game => game.difficulty === 100 && game.won), unlocked: false },
+  { id: 6, name: "זיכרון מעולה", description: "נצח במשחק זיכרון ברמת קושי קשה", condition: (stats) => stats.playerStats.some(game => game.gameType === "memoryMatch" && game.difficulty === 12 && game.won), unlocked: false },
+  { id: 7, name: "מלך הטריוויה", description: "צבור 5 נקודות בטריוויה", condition: (stats) => stats.playerStats.some(game => game.gameType === "trivia" && game.score >= 5), unlocked: false }
+];
+let unlockedThemes = ["dark", "light", "neon"];
+let unlockedConfetti = ["default", "stars", "hearts", "none"];
+
+// Mode translations for Hebrew display
+const modeTranslations = {
+  "normal": "רגיל",
+  "fast": "מהיר (30 שניות)",
+  "noHints": "בלי רמזים",
+  "dynamicRange": "טווח משתנה"
+};
+
+// Daily Challenges
+let dailyChallenges = [
+  { id: 1, description: "נצח משחק ניחושים ברמת קושי קשה", condition: (game) => game.gameType === "numberGuess" && game.difficulty === 100 && game.won, rewardPoints: 50 },
+  { id: 2, description: "צבור 3 נקודות בטריוויה", condition: (game) => game.gameType === "trivia" && game.score >= 3, rewardPoints: 30 },
+  { id: 3, description: "סיים משחק זיכרון בינוני תוך פחות מ-30 שניות", condition: (game) => game.gameType === "memoryMatch" && game.difficulty === 8 && game.time < 30 && game.won, rewardPoints: 40 }
+];
+let completedChallenges = JSON.parse(localStorage.getItem(`${username}_completedChallenges`)) || { date: "", challenges: [] };
+
+// Load Settings
+// Load Settings
 function loadSettings() {
   const savedTheme = localStorage.getItem("theme") || "dark";
   themeSelect.value = savedTheme;
@@ -239,9 +282,7 @@ function loadSettings() {
   const savedConfettiAmount = localStorage.getItem("confettiAmount") || "medium";
   confettiAmountSelect.value = savedConfettiAmount;
 
-  console.log("Loading settings:", { savedTheme });
-
-  document.body.classList.remove("dark", "light", "neon", "space", "gradient");
+  document.body.classList.remove("dark", "light", "neon", "space", "gradient", "rgb");
   document.body.style.background = "";
   document.body.style.backgroundSize = "";
   document.body.style.animation = "";
@@ -249,128 +290,63 @@ function loadSettings() {
 
   const savedGradient = JSON.parse(localStorage.getItem("customGradient"));
   if (savedGradient) {
-    console.log("Applying saved gradient:", savedGradient);
     gradientColor1.value = savedGradient.color1;
     gradientColor2.value = savedGradient.color2;
     applyCustomGradient(savedGradient.color1, savedGradient.color2);
   } else {
-    console.log("Applying theme:", savedTheme);
     document.body.classList.add(savedTheme);
-    setTimeout(() => {
-      document.body.classList.remove(savedTheme);
-      document.body.classList.add(savedTheme);
-      console.log("Forced theme reapplication:", savedTheme);
-    }, 0);
   }
 
-  volumeControl.value = soundManager.volume;
+  const rgbEnabled = localStorage.getItem("rgbEnabled") === "true";
+  if (rgbEnabled) {
+    document.body.classList.add("rgb");
+    startRGBWaves();
+    rgbBtn.textContent = "כבה גלי צבעים";
+  }
+
+  // Add safeguard for soundManager
+  if (soundManager) {
+    volumeControl.value = soundManager.volume;
+  } else {
+    console.error("soundManager is not initialized yet");
+    volumeControl.value = 1; // Fallback value
+  }
 }
 
 // Apply Custom Gradient
 function applyCustomGradient(color1, color2) {
-  console.log("Applying custom gradient:", { color1, color2 });
-  document.body.classList.remove("dark", "light", "neon", "space", "gradient");
+  document.body.classList.remove("dark", "light", "neon", "space", "gradient", "rgb", "slow", "medium", "fast");
   document.body.style.background = `linear-gradient(45deg, ${color1}, ${color2})`;
   document.body.style.backgroundSize = "600%";
-  document.body.style.animation = "";
-  document.body.style.backgroundColor = "";
+  document.body.style.animation = "gradient 15s ease infinite";
+  document.body.classList.add("gradient");
   localStorage.setItem("customGradient", JSON.stringify({ color1, color2 }));
-  console.log("Gradient applied, body styles:", {
-    background: document.body.style.background,
-    backgroundColor: document.body.style.backgroundColor,
-    classList: document.body.classList.toString()
-  });
 }
 
-// Load Stats
-function loadStats() {
-  const savedStats = localStorage.getItem("stats");
-  if (savedStats) {
-    try {
-      stats = JSON.parse(savedStats);
-      if (typeof stats !== "object" || stats === null) {
-        throw new Error("stats is not an object");
-      }
-      stats.gamesPlayed = typeof stats.gamesPlayed === "number" ? stats.gamesPlayed : 0;
-      stats.wins = typeof stats.wins === "number" ? stats.wins : 0;
-      stats.totalGuesses = typeof stats.totalGuesses === "number" ? stats.totalGuesses : 0;
-      stats.totalTime = typeof stats.totalTime === "number" ? stats.totalTime : 0;
-      if (!Array.isArray(stats.playerStats)) {
-        console.warn("playerStats is not an array in saved stats. Resetting to empty array.");
-        stats.playerStats = [];
-      }
-    } catch (err) {
-      console.error("Error parsing saved stats. Resetting to default stats:", err);
-      stats = { gamesPlayed: 0, wins: 0, totalGuesses: 0, totalTime: 0, playerStats: [] };
-      localStorage.setItem("stats", JSON.stringify(stats));
-    }
+// RGB Waves
+function startRGBWaves() {
+  stopRGBWaves();
+  document.body.style.background = "none";
+  document.body.style.backgroundImage = "none";
+  document.body.style.backgroundSize = "";
+  document.body.style.animation = "";
+  document.body.style.animationFillMode = "";
+  const intervalTime = 50; // Hardcode to "medium" speed (50ms interval)
+  rgbInterval = setInterval(() => {
+    hue = (hue + 1) % 360;
+    const color = `hsl(${hue}, 100%, 50%)`;
+    document.body.style.backgroundColor = color;
+    document.body.style.background = "none";
+    document.body.style.backgroundImage = "none";
+  }, intervalTime);
+}
+
+function stopRGBWaves() {
+  if (rgbInterval) {
+    clearInterval(rgbInterval);
+    rgbInterval = null;
   }
-  console.log("Loaded stats:", stats);
-  highscore = stats.wins;
-  highscoreDisplay.textContent = `🏆 שיא אישי: ${highscore}`;
-  updateStatsDisplay();
-}
-
-// Load Achievements
-function loadAchievements() {
-  const savedUnlockedThemes = JSON.parse(localStorage.getItem("unlockedThemes"));
-  if (savedUnlockedThemes) {
-    unlockedThemes = savedUnlockedThemes;
-  }
-  const savedUnlockedConfetti = JSON.parse(localStorage.getItem("unlockedConfetti"));
-  if (savedUnlockedConfetti) {
-    unlockedConfetti = savedUnlockedConfetti;
-  }
-  updateThemeOptions();
-  updateConfettiOptions();
-  displayAchievements();
-}
-
-// Update Theme Options
-function updateThemeOptions() {
-  themeSelect.innerHTML = "";
-  const themes = [
-    { value: "dark", label: "כהה" },
-    { value: "light", label: "בהיר" },
-    { value: "neon", label: "ניאון" },
-    { value: "space", label: "חלל (נעול 🔒)" }
-  ];
-  themes.forEach(theme => {
-    const option = document.createElement("option");
-    option.value = theme.value;
-    option.textContent = theme.label;
-    if (theme.value === "space" && !unlockedThemes.includes("space")) {
-      option.disabled = true;
-    } else if (theme.value === "space") {
-      option.textContent = "חלל";
-    }
-    themeSelect.appendChild(option);
-  });
-  themeSelect.value = localStorage.getItem("theme") || "dark";
-}
-
-// Update Confetti Options
-function updateConfettiOptions() {
-  confettiTypeSelect.innerHTML = "";
-  const confettiTypes = [
-    { value: "default", label: "רגיל" },
-    { value: "stars", label: "כוכבים" },
-    { value: "hearts", label: "לבבות" },
-    { value: "butterflies", label: "פרפרים (נעול 🔒)" },
-    { value: "none", label: "ללא קונפטי" }
-  ];
-  confettiTypes.forEach(type => {
-    const option = document.createElement("option");
-    option.value = type.value;
-    option.textContent = type.label;
-    if (type.value === "butterflies" && !unlockedConfetti.includes("butterflies")) {
-      option.disabled = true;
-    } else if (type.value === "butterflies") {
-      option.textContent = "פרפרים";
-    }
-    confettiTypeSelect.appendChild(option);
-  });
-  confettiTypeSelect.value = localStorage.getItem("confettiType") || "default";
+  document.body.style.backgroundColor = "";
 }
 
 // Initialize Particles
@@ -401,12 +377,10 @@ function loadParticles() {
 function showConfetti() {
   const confettiType = confettiTypeSelect.value;
   const confettiAmount = confettiAmountSelect.value;
-  console.log("showConfetti called with type:", confettiType, "amount:", confettiAmount);
   if (confettiType === "none") return;
 
   let count = confettiAmount === "light" ? 30 : confettiAmount === "medium" ? 60 : 120;
   let shapes = confettiType === "stars" ? ["star"] : confettiType === "hearts" ? ["circle"] : confettiType === "butterflies" ? ["circle"] : ["circle", "square"];
-  console.log("Confetti shapes:", shapes);
 
   try {
     confetti({
@@ -418,8 +392,7 @@ function showConfetti() {
     });
   } catch (err) {
     console.error("Confetti error:", err);
-    message.textContent = "שגיאה בהפעלת קונפטי. בדוק את חיבור האינטרנט או נסה שוב.";
-    message.classList.add("fail");
+    showMessage("שגיאה בהפעלת קונפטי. בדוק את חיבור האינטרנט או נסה שוב.");
   }
 
   for (let i = 0; i < 20; i++) {
@@ -444,28 +417,28 @@ function showConfetti() {
   }
 }
 
-// Start Game
-function startGame() {
+// Number Guessing Game Logic
+function startNumberGuessGame() {
   const range = parseInt(difficultySelect.value);
   const gameMode = gameModeSelect.value;
   secretNumber = Math.floor(Math.random() * range) + 1;
   lives = maxLives;
   guesses = 0;
   hintsUsed = 0;
-  hintUsedThisGame = false; // Reset hint usage for the new game
+  hintUsedThisGame = false;
   timer = 0;
   gameActive = true;
 
   startGameBtn.style.display = "none";
   stopGameBtn.style.display = "inline-block";
-  playAgainBtn.style.display = "none"; // Hide play again button during game
+  playAgainBtn.style.display = "none";
   inputContainer.classList.remove("hidden");
   message.textContent = "";
   message.classList.remove("success", "fail");
   guessInput.value = "";
   guessInput.disabled = false;
   guessInput.focus();
-  hintButton.disabled = false; // Enable hint button at the start of the game
+  hintButton.disabled = false;
 
   hintButton.style.display = gameMode === "noHints" ? "none" : "inline-block";
 
@@ -483,7 +456,7 @@ function startGame() {
     timerDisplay.textContent = `זמן: ${timer} שניות`;
     if (gameMode === "fast" && timer >= 30) {
       showMessage("הגבלת זמן! המשחק נעצר.", () => {
-        endGame(false);
+        endNumberGuessGame(false);
       });
     }
   }, 1000);
@@ -494,7 +467,7 @@ function startGame() {
     idleTimerDisplay.textContent = `זמן חוסר פעילות: ${idleTimer} שניות`;
     if (idleTimer >= 30) {
       showMessage("חוסר פעילות ממושך! המשחק נעצר.", () => {
-        endGame(false);
+        endNumberGuessGame(false);
       });
     }
   }, 1000);
@@ -505,14 +478,13 @@ function startGame() {
   vibrationManager.vibrate(50);
 }
 
-// End Game
-function endGame(won) {
+function endNumberGuessGame(won) {
   gameActive = false;
   clearInterval(timerInterval);
   clearInterval(idleInterval);
   stopGameBtn.style.display = "none";
   startGameBtn.style.display = "inline-block";
-  playAgainBtn.style.display = "inline-block"; // Show play again button
+  playAgainBtn.style.display = "inline-block";
   inputContainer.classList.add("hidden");
   timerDisplay.textContent = "";
   idleTimerDisplay.textContent = "";
@@ -521,8 +493,6 @@ function endGame(won) {
   const range = parseInt(difficultySelect.value);
   const gameMode = gameModeSelect.value;
   const score = won ? Math.max(1, range - guesses) : 0;
-
-  console.log("endGame called with won:", won, "Current stats.wins:", stats.wins);
 
   if (won) {
     stats.wins++;
@@ -534,7 +504,7 @@ function endGame(won) {
     showConfetti();
     soundManager.play("success");
     vibrationManager.vibrate([100, 50, 100]);
-    updateLeaderboard(score);
+    updateLeaderboard(score, "numberGuess");
   } else {
     message.textContent = `הפסדת! המספר היה ${secretNumber}.`;
     message.classList.remove("success");
@@ -546,27 +516,22 @@ function endGame(won) {
   highscore = stats.wins;
   highscoreDisplay.textContent = `🏆 שיא אישי: ${highscore}`;
 
-  console.log("After endGame, stats.wins:", stats.wins);
-
-  if (!Array.isArray(stats.playerStats)) {
-    console.warn("playerStats is not an array before pushing game data. Resetting to empty array.");
-    stats.playerStats = [];
-  }
-
-  stats.playerStats.push({
+  const gameData = {
+    gameType: "numberGuess",
     won,
     guesses,
     time: timer,
     difficulty: range,
-    mode: gameModeSelect.value,
+    mode: gameMode,
     hintsUsed,
     date: new Date().toLocaleString("he-IL")
-  });
+  };
+  stats.playerStats.push(gameData);
   saveStats();
   checkAchievements();
+  checkDailyChallenges(gameData);
 }
 
-// Check Guess
 function checkGuess() {
   if (!gameActive) return;
 
@@ -582,7 +547,7 @@ function checkGuess() {
 
   guesses++;
   if (guess === secretNumber) {
-    endGame(true);
+    endNumberGuessGame(true);
   } else {
     lives--;
     const heart = livesDisplay.querySelector(".heart:last-child");
@@ -592,7 +557,7 @@ function checkGuess() {
     }
 
     if (lives <= 0) {
-      endGame(false);
+      endNumberGuessGame(false);
     } else {
       message.textContent = guess > secretNumber ? "גבוה מדי! נסה שוב." : "נמוך מדי! נסה שוב.";
       message.classList.remove("success");
@@ -606,7 +571,6 @@ function checkGuess() {
   guessInput.focus();
 }
 
-// Provide Hint (Limited to 1 per game)
 function provideHint() {
   if (!gameActive) return;
   if (hintUsedThisGame) {
@@ -617,8 +581,8 @@ function provideHint() {
   }
 
   hintsUsed++;
-  hintUsedThisGame = true; // Mark hint as used for this game
-  hintButton.disabled = true; // Disable the hint button for the rest of the game
+  hintUsedThisGame = true;
+  hintButton.disabled = true;
 
   const range = parseInt(difficultySelect.value);
   const hintRange = Math.floor(range / 10);
@@ -628,7 +592,6 @@ function provideHint() {
   soundManager.play("hint");
   vibrationManager.vibrate(50);
 
-  // Deduct a life for using a hint
   lives--;
   const heart = livesDisplay.querySelector(".heart:last-child");
   if (heart) {
@@ -637,13 +600,452 @@ function provideHint() {
   }
 
   if (lives <= 0) {
-    endGame(false);
+    endNumberGuessGame(false);
   } else {
     livesDisplay.setAttribute("aria-label", `מספר החיים הנותרים: ${lives}`);
   }
 }
 
-// Check Achievements
+// Memory Match Game Logic
+function startMemoryMatchGame() {
+  memoryGameActive = true;
+  memoryMatchesFound = 0;
+  memoryFlippedCards = [];
+  memoryTimer = 0;
+  memoryMoves = 0;
+  memoryBoard.innerHTML = "";
+  memoryMessage.textContent = "";
+  memoryTimer.textContent = "זמן: 0 שניות";
+  memoryMoves.textContent = "מהלכים: 0";
+  startMemoryMatchBtn.style.display = "none";
+  restartMemoryMatchBtn.style.display = "none";
+
+  const numCards = parseInt(memoryDifficultySelect.value);
+  const symbols = ["🍎", "🍌", "🍒", "🍇", "🍉", "🍊", "🍍", "🍓"];
+  const selectedSymbols = symbols.slice(0, numCards / 2);
+  const cardValues = [...selectedSymbols, ...selectedSymbols];
+  cardValues.sort(() => Math.random() - 0.5);
+
+  cardValues.forEach((value, index) => {
+    const card = document.createElement("div");
+    card.classList.add("memory-card");
+    card.dataset.value = value;
+    card.dataset.index = index;
+    card.addEventListener("click", flipCard);
+    memoryBoard.appendChild(card);
+  });
+
+  memoryTimerInterval = setInterval(() => {
+    memoryTimer++;
+    memoryTimer.textContent = `זמן: ${memoryTimer} שניות`;
+  }, 1000);
+
+  stats.gamesPlayed++;
+  saveStats();
+  soundManager.play("click");
+  vibrationManager.vibrate(50);
+}
+
+function flipCard(event) {
+  if (!memoryGameActive || memoryFlippedCards.length >= 2) return;
+  const card = event.target;
+  if (card.classList.contains("flipped") || card.classList.contains("matched")) return;
+
+  card.classList.add("flipped");
+  card.textContent = card.dataset.value;
+  memoryFlippedCards.push(card);
+  memoryMoves++;
+  memoryMoves.textContent = `מהלכים: ${memoryMoves}`;
+  soundManager.play("click");
+  vibrationManager.vibrate(50);
+
+  if (memoryFlippedCards.length === 2) {
+    memoryGameActive = false;
+    setTimeout(checkMatch, 1000);
+  }
+}
+
+function checkMatch() {
+  const [card1, card2] = memoryFlippedCards;
+  if (card1.dataset.value === card2.dataset.value) {
+    card1.classList.add("matched");
+    card2.classList.add("matched");
+    memoryMatchesFound += 2;
+    soundManager.play("success");
+    vibrationManager.vibrate([100, 50, 100]);
+    if (memoryMatchesFound === parseInt(memoryDifficultySelect.value)) {
+      endMemoryMatchGame(true);
+    }
+  } else {
+    card1.classList.remove("flipped");
+    card2.classList.remove("flipped");
+    card1.textContent = "";
+    card2.textContent = "";
+    soundManager.play("fail");
+    vibrationManager.vibrate(50);
+  }
+  memoryFlippedCards = [];
+  memoryGameActive = true;
+}
+
+function endMemoryMatchGame(won) {
+  memoryGameActive = false;
+  clearInterval(memoryTimerInterval);
+  startMemoryMatchBtn.style.display = "none";
+  restartMemoryMatchBtn.style.display = "inline-block";
+  const difficulty = parseInt(memoryDifficultySelect.value);
+  const score = won ? Math.max(1, 100 - memoryMoves - memoryTimer) : 0;
+
+  if (won) {
+    stats.wins++;
+    memoryMessage.textContent = `כל הכבוד! סיימת ב-${memoryMoves} מהלכים ו-${memoryTimer} שניות! צברת ${score} נקודות!`;
+    memoryMessage.classList.remove("fail");
+    memoryMessage.classList.add("success");
+    showConfetti();
+    soundManager.play("success");
+    vibrationManager.vibrate([100, 50, 100]);
+    updateLeaderboard(score, "memoryMatch");
+  } else {
+    memoryMessage.textContent = "הפסדת! נסה שוב.";
+    memoryMessage.classList.remove("success");
+    memoryMessage.classList.add("fail");
+    soundManager.play("gameOver");
+    vibrationManager.vibrate([200, 100, 200]);
+  }
+
+  const gameData = {
+    gameType: "memoryMatch",
+    won,
+    moves: memoryMoves,
+    time: memoryTimer,
+    difficulty,
+    date: new Date().toLocaleString("he-IL")
+  };
+  stats.playerStats.push(gameData);
+  saveStats();
+  checkAchievements();
+  checkDailyChallenges(gameData);
+}
+
+// Trivia Game Logic
+function startTriviaGame() {
+  triviaGameActive = true;
+  triviaCurrentQuestion = 0;
+  triviaScoreValue = 0;
+  triviaTimer = 0; // Remove 'let'
+  triviaQuestion.classList.remove("hidden");
+  triviaMessage.textContent = "";
+  triviaScore.textContent = "ניקוד: 0";
+  triviaTimer.textContent = "זמן: 0 שניות";
+  startTriviaBtn.style.display = "none";
+  restartTriviaBtn.style.display = "none";
+
+  loadTriviaQuestion();
+
+  triviaTimerInterval = setInterval(() => {
+    triviaTimer++;
+    triviaTimer.textContent = `זמן: ${triviaTimer} שניות`;
+  }, 1000);
+
+  stats.gamesPlayed++;
+  saveStats();
+  soundManager.play("click");
+  vibrationManager.vibrate(50);
+}
+
+function loadTriviaQuestion() {
+  if (triviaCurrentQuestion >= triviaQuestions[triviaCategorySelect.value].length) {
+    endTriviaGame(true);
+    return;
+  }
+
+  const questionData = triviaQuestions[triviaCategorySelect.value][triviaCurrentQuestion];
+  triviaQuestionText.textContent = questionData.question;
+  triviaOptions.innerHTML = "";
+
+  questionData.options.forEach(option => {
+    const button = document.createElement("button");
+    button.classList.add("trivia-option");
+    button.textContent = option;
+    button.addEventListener("click", () => checkTriviaAnswer(option, questionData.answer));
+    triviaOptions.appendChild(button);
+  });
+}
+
+function checkTriviaAnswer(selectedOption, correctAnswer) {
+  if (!triviaGameActive) return;
+
+  const buttons = triviaOptions.querySelectorAll(".trivia-option");
+  buttons.forEach(button => {
+    button.disabled = true;
+    if (button.textContent === correctAnswer) {
+      button.classList.add("correct");
+    }
+    if (button.textContent === selectedOption && selectedOption !== correctAnswer) {
+      button.classList.add("incorrect");
+    }
+  });
+
+  if (selectedOption === correctAnswer) {
+    triviaScoreValue++;
+    triviaScore.textContent = `ניקוד: ${triviaScoreValue}`;
+    triviaMessage.textContent = "תשובה נכונה!";
+    triviaMessage.classList.remove("fail");
+    triviaMessage.classList.add("success");
+    soundManager.play("success");
+    vibrationManager.vibrate([100, 50, 100]);
+  } else {
+    triviaMessage.textContent = `תשובה שגויה! התשובה הנכונה היא: ${correctAnswer}`;
+    triviaMessage.classList.remove("success");
+    triviaMessage.classList.add("fail");
+    soundManager.play("fail");
+    vibrationManager.vibrate(50);
+  }
+
+  setTimeout(() => {
+    triviaCurrentQuestion++;
+    loadTriviaQuestion();
+  }, 2000);
+}
+
+function endTriviaGame(won) {
+  triviaGameActive = false;
+  clearInterval(triviaTimerInterval);
+  triviaQuestion.classList.add("hidden");
+  startTriviaBtn.style.display = "none";
+  restartTriviaBtn.style.display = "inline-block";
+  const score = triviaScoreValue;
+
+  if (won) {
+    stats.wins++;
+    triviaMessage.textContent = `כל הכבוד! סיימת עם ${triviaScoreValue} נקודות ב-${triviaTimer} שניות!`;
+    triviaMessage.classList.remove("fail");
+    triviaMessage.classList.add("success");
+    showConfetti();
+    soundManager.play("success");
+    vibrationManager.vibrate([100, 50, 100]);
+    updateLeaderboard(score, "trivia");
+  } else {
+    triviaMessage.textContent = "הפסדת! נסה שוב.";
+    triviaMessage.classList.remove("success");
+    triviaMessage.classList.add("fail");
+    soundManager.play("gameOver");
+    vibrationManager.vibrate([200, 100, 200]);
+  }
+
+  const gameData = {
+    gameType: "trivia",
+    won,
+    score: triviaScoreValue,
+    time: triviaTimer,
+    category: triviaCategorySelect.value,
+    date: new Date().toLocaleString("he-IL")
+  };
+  stats.playerStats.push(gameData);
+  saveStats();
+  checkAchievements();
+  checkDailyChallenges(gameData);
+}
+
+// Leaderboard and Admin Functions
+function updateLeaderboard(score, gameType) {
+  if (bannedUsers.includes(username)) {
+    showMessage("חשבונך נחסם. אין באפשרותך להשתתף בדירוג.");
+    return;
+  }
+
+  if (!username || typeof score !== "number" || isNaN(score) || score < 0) {
+    console.error("Invalid data for leaderboard:", { username, score });
+    showMessage("שגיאה בעדכון הדירוג: נתונים לא תקינים.");
+    return;
+  }
+
+  const leaderboardRef = database.ref(`leaderboard/${username}/${gameType}`);
+  leaderboardRef.once("value", snapshot => {
+    let userData = snapshot.val();
+    if (!userData) {
+      userData = { scores: [] };
+    }
+    userData.scores = userData.scores || [];
+    userData.scores.push({ score, timestamp: new Date().toISOString() });
+    leaderboardRef.set(userData)
+      .then(() => {
+        // Update global leaderboard
+        const globalRef = database.ref(`leaderboard/${username}/global`);
+        globalRef.once("value", globalSnapshot => {
+          let globalData = globalSnapshot.val() || { scores: [] };
+          globalData.scores.push({ score, timestamp: new Date().toISOString() });
+          globalRef.set(globalData)
+            .then(() => {
+              displayLeaderboard();
+            });
+        });
+      })
+      .catch(err => {
+        console.error("Error updating leaderboard:", err);
+        showMessage("שגיאה בעדכון הדירוג: " + err.message);
+      });
+  });
+}
+
+function displayLeaderboard() {
+  leaderboardList.innerHTML = "";
+  const leaderboardRef = database.ref("leaderboard");
+  leaderboardRef.once("value", snapshot => {
+    const leaderboardData = snapshot.val();
+    if (!leaderboardData) {
+      leaderboardList.innerHTML = "<li>אין נתונים זמינים להצגה</li>";
+      return;
+    }
+
+    const processedData = [];
+    Object.keys(leaderboardData).forEach(user => {
+      if (bannedUsers.includes(user)) return;
+      const userData = leaderboardData[user];
+      const globalScores = userData.global ? userData.global.scores || [] : [];
+      const totalScore = globalScores.reduce((sum, entry) => sum + entry.score, 0);
+      processedData.push({ username: user, totalScore });
+
+      // Game-specific leaderboards
+      const numberGuessScores = userData.numberGuess ? userData.numberGuess.scores || [] : [];
+      const memoryMatchScores = userData.memoryMatch ? userData.memoryMatch.scores || [] : [];
+      const triviaScores = userData.trivia ? userData.trivia.scores || [] : [];
+      const dailyChallengeScores = userData.dailyChallenge ? userData.dailyChallenge.scores || [] : [];
+
+      processedData.push({ username: user, gameType: "numberGuess", totalScore: numberGuessScores.reduce((sum, entry) => sum + entry.score, 0) });
+      processedData.push({ username: user, gameType: "memoryMatch", totalScore: memoryMatchScores.reduce((sum, entry) => sum + entry.score, 0) });
+      processedData.push({ username: user, gameType: "trivia", totalScore: triviaScores.reduce((sum, entry) => sum + entry.score, 0) });
+      processedData.push({ username: user, gameType: "dailyChallenge", totalScore: dailyChallengeScores.reduce((sum, entry) => sum + entry.score, 0) });
+    });
+
+    // Global Leaderboard
+    const globalData = processedData.filter(entry => !entry.gameType);
+    globalData.sort((a, b) => b.totalScore - a.totalScore);
+    const top10Global = globalData.slice(0, 10);
+
+    leaderboardList.innerHTML = "<h4>דירוג כללי</h4>";
+    if (top10Global.length === 0) {
+      leaderboardList.innerHTML += "<li>אין נתונים זמינים להצגה</li>";
+    } else {
+      let rank = 1;
+      top10Global.forEach(entry => {
+        const li = document.createElement("li");
+        li.textContent = `${rank}. ${entry.username}: ${entry.totalScore} נקודות`;
+        leaderboardList.appendChild(li);
+        rank++;
+      });
+    }
+
+    // Game-Specific Leaderboards
+    ["numberGuess", "memoryMatch", "trivia", "dailyChallenge"].forEach(gameType => {
+      const gameData = processedData.filter(entry => entry.gameType === gameType);
+      gameData.sort((a, b) => b.totalScore - a.totalScore);
+      const top10 = gameData.slice(0, 10);
+
+      const gameTitle = document.createElement("h4");
+      gameTitle.textContent = gameType === "numberGuess" ? "ניחוש מספרים" : gameType === "memoryMatch" ? "משחק זיכרון" : gameType === "trivia" ? "טריוויה" : "אתגרים יומיים";
+      leaderboardList.appendChild(gameTitle);
+
+      if (top10.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "אין נתונים זמינים להצגה";
+        leaderboardList.appendChild(li);
+      } else {
+        let rank = 1;
+        top10.forEach(entry => {
+          const li = document.createElement("li");
+          li.textContent = `${rank}. ${entry.username}: ${entry.totalScore} נקודות`;
+          leaderboardList.appendChild(li);
+          rank++;
+        });
+      }
+    });
+  });
+}
+
+function clearLeaderboard() {
+  const leaderboardRef = database.ref("leaderboard");
+  leaderboardRef.remove()
+    .then(() => {
+      console.log("Leaderboard cleared successfully");
+      displayLeaderboard();
+      showMessage("הדירוג נוקה בהצלחה!");
+    })
+    .catch(err => {
+      console.error("Error clearing leaderboard:", err);
+      showMessage("שגיאה בניקוי הדירוג: " + err.message);
+    });
+}
+
+function loadAdminUsers() {
+  const leaderboardRef = database.ref("leaderboard");
+  leaderboardRef.once("value", snapshot => {
+    const leaderboardData = snapshot.val();
+    if (!leaderboardData) {
+      adminUserSelect.innerHTML = "<option value=''>אין משתמשים זמינים</option>";
+      adminBanUserSelect.innerHTML = "<option value=''>אין משתמשים זמינים</option>";
+      return;
+    }
+
+    const users = Object.keys(leaderboardData).filter(user => !bannedUsers.includes(user));
+    adminUserSelect.innerHTML = "<option value=''>בחר משתמש</option>";
+    adminBanUserSelect.innerHTML = "<option value=''>בחר משתמש</option>";
+
+    users.forEach(user => {
+      const option1 = document.createElement("option");
+      option1.value = user;
+      option1.textContent = user;
+      adminUserSelect.appendChild(option1);
+
+      const option2 = document.createElement("option");
+      option2.value = user;
+      option2.textContent = user;
+      adminBanUserSelect.appendChild(option2);
+    });
+  });
+}
+
+function viewUserPoints() {
+  const selectedUser = adminUserSelect.value;
+  if (!selectedUser) {
+    adminUserPoints.textContent = "בחר משתמש תחילה.";
+    return;
+  }
+
+  const userRef = database.ref(`leaderboard/${selectedUser}`);
+  userRef.once("value", snapshot => {
+    const userData = snapshot.val();
+    if (!userData || !userData.global || !userData.global.scores) {
+      adminUserPoints.textContent = "אין נתונים זמינים למשתמש זה.";
+      return;
+    }
+
+    const totalScore = userData.global.scores.reduce((sum, entry) => sum + entry.score, 0);
+    adminUserPoints.textContent = `${selectedUser}: ${totalScore} נקודות`;
+  });
+}
+
+function banUser() {
+  const selectedUser = adminBanUserSelect.value;
+  if (!selectedUser) {
+    adminBanMessage.textContent = "בחר משתמש תחילה.";
+    return;
+  }
+
+  if (selectedUser === "admin") {
+    adminBanMessage.textContent = "לא ניתן לחסום את חשבון המנהל.";
+    return;
+  }
+
+  bannedUsers.push(selectedUser);
+  localStorage.setItem("bannedUsers", JSON.stringify(bannedUsers));
+  adminBanMessage.textContent = `המשתמש ${selectedUser} נחסם בהצלחה.`;
+  displayLeaderboard();
+  loadAdminUsers();
+}
+
+// Stats and Achievements Functions
+// Stats and Achievements Functions
 function checkAchievements() {
   let updated = false;
   achievements.forEach(achievement => {
@@ -651,28 +1053,27 @@ function checkAchievements() {
       achievement.unlocked = true;
       updated = true;
       applyReward(achievement);
-      showMessage(`השגת הישג חדש: ${achievement.name}! ${achievement.description}`, () => {});
+      showMessage(`השגת הישג חדש: ${achievement.name}! ${achievement.description}`);
     }
   });
   if (updated) {
+    localStorage.setItem(`${username}_achievements`, JSON.stringify(achievements));
     displayAchievements();
   }
 }
 
-// Apply Reward
 function applyReward(achievement) {
   if (achievement.reward === "theme" && !unlockedThemes.includes(achievement.rewardValue)) {
     unlockedThemes.push(achievement.rewardValue);
-    localStorage.setItem("unlockedThemes", JSON.stringify(unlockedThemes));
+    localStorage.setItem(`${username}_unlockedThemes`, JSON.stringify(unlockedThemes));
     updateThemeOptions();
   } else if (achievement.reward === "confetti" && !unlockedConfetti.includes(achievement.rewardValue)) {
     unlockedConfetti.push(achievement.rewardValue);
-    localStorage.setItem("unlockedConfetti", JSON.stringify(unlockedConfetti));
+    localStorage.setItem(`${username}_unlockedConfetti`, JSON.stringify(unlockedConfetti));
     updateConfettiOptions();
   }
 }
 
-// Display Achievements
 function displayAchievements() {
   achievementsList.innerHTML = "";
   achievements.forEach(achievement => {
@@ -685,164 +1086,126 @@ function displayAchievements() {
   });
 }
 
-// Update Leaderboard
-function updateLeaderboard(score) {
-  if (!username) {
-    console.error("Username is missing");
-    message.textContent = "שגיאה: שם משתמש חסר";
-    message.classList.add("fail");
-    return;
+function checkDailyChallenges(game) {
+  const today = new Date().toISOString().split("T")[0];
+  if (completedChallenges.date !== today) {
+    completedChallenges = { date: today, challenges: [] };
+    localStorage.setItem(`${username}_completedChallenges`, JSON.stringify(completedChallenges));
   }
 
-  if (!/^[a-zA-Z0-9א-ת]+$/.test(username)) {
-    console.error("Invalid username format:", username);
-    message.textContent = "שגיאה: שם המשתמש מכיל תווים לא חוקיים";
-    message.classList.add("fail");
-    return;
-  }
-
-  if (typeof score !== "number" || isNaN(score) || score < 0) {
-    console.error("Invalid score:", score);
-    message.textContent = "שגיאה: ניקוד לא תקין";
-    message.classList.add("fail");
-    return;
-  }
-
-  const transaction = db.transaction([STORE_NAME], "readwrite");
-  const store = transaction.objectStore(STORE_NAME);
-
-  const getRequest = store.get(username);
-
-  getRequest.onsuccess = (event) => {
-    let userData = event.target.result;
-    if (!userData) {
-      userData = {
-        username,
-        scores: [{ score, timestamp: new Date().toISOString() }]
-      };
-    } else {
-      userData.scores.push({ score, timestamp: new Date().toISOString() });
+  dailyChallenges.forEach(challenge => {
+    if (!completedChallenges.challenges.includes(challenge.id) && challenge.condition(game)) {
+      completedChallenges.challenges.push(challenge.id);
+      updateLeaderboard(challenge.rewardPoints, "dailyChallenge");
+      showMessage(`השלמת אתגר יומי: ${challenge.description}! קיבלת ${challenge.rewardPoints} נקודות!`);
+      localStorage.setItem(`${username}_completedChallenges`, JSON.stringify(completedChallenges));
     }
-
-    const putRequest = store.put(userData);
-
-    putRequest.onsuccess = () => {
-      displayLeaderboard();
-    };
-
-    putRequest.onerror = (event) => {
-      console.error("Error updating leaderboard:", event.target.error);
-      message.textContent = "שגיאה בעדכון הדירוג: " + (event.target.error.message || "תקלה לא ידועה");
-      message.classList.add("fail");
-    };
-  };
-
-  getRequest.onerror = (event) => {
-    console.error("Error fetching user data:", event.target.error);
-    message.textContent = "שגיאה בטעינת נתוני משתמש: " + (event.target.error.message || "תקלה לא ידועה");
-    message.classList.add("fail");
-  };
+  });
 }
 
-// Display Leaderboard
-function displayLeaderboard() {
-  leaderboardList.innerHTML = "";
-  const transaction = db.transaction([STORE_NAME], "readonly");
-  const store = transaction.objectStore(STORE_NAME);
-
-  const request = store.getAll();
-
-  request.onsuccess = (event) => {
-    const leaderboardData = event.target.result;
-    console.log("Leaderboard data:", leaderboardData);
-    if (!leaderboardData || leaderboardData.length === 0) {
-      leaderboardList.innerHTML = "<li>אין נתונים זמינים להצגה</li>";
-      return;
+function loadStats() {
+  const savedStats = localStorage.getItem(`${username}_stats`);
+  if (savedStats) {
+    try {
+      stats = JSON.parse(savedStats);
+      if (typeof stats !== "object" || stats === null) {
+        throw new Error("stats is not an object");
+      }
+      stats.gamesPlayed = typeof stats.gamesPlayed === "number" ? stats.gamesPlayed : 0;
+      stats.wins = typeof stats.wins === "number" ? stats.wins : 0;
+      stats.totalGuesses = typeof stats.totalGuesses === "number" ? stats.totalGuesses : 0;
+      stats.totalTime = typeof stats.totalTime === "number" ? stats.totalTime : 0;
+      if (!Array.isArray(stats.playerStats)) {
+        console.warn("playerStats is not an array in saved stats. Resetting to empty array.");
+        stats.playerStats = [];
+      }
+    } catch (err) {
+      console.error("Error parsing saved stats. Resetting to default stats:", err);
+      stats = { gamesPlayed: 0, wins: 0, totalGuesses: 0, totalTime: 0, playerStats: [] };
+      localStorage.setItem(`${username}_stats`, JSON.stringify(stats));
     }
-
-    const processedData = leaderboardData.map(user => {
-      const totalScore = user.scores.reduce((sum, entry) => sum + entry.score, 0);
-      return { username: user.username, totalScore: totalScore };
-    });
-
-    processedData.sort((a, b) => b.totalScore - a.totalScore);
-    const top10 = processedData.slice(0, 10);
-
-    let rank = 1;
-    top10.forEach(entry => {
-      const li = document.createElement("li");
-      li.textContent = `${rank}. ${entry.username}: ${entry.totalScore} נקודות`;
-      leaderboardList.appendChild(li);
-      rank++;
-    });
-  };
-
-  request.onerror = (event) => {
-    console.error("Error fetching leaderboard:", event.target.error);
-    leaderboardList.innerHTML = "<li>שגיאה בטעינת הדירוג: " + (event.target.error.message || "תקלה לא ידועה") + "</li>";
-  };
+  }
+  highscore = stats.wins;
+  highscoreDisplay.textContent = `🏆 שיא אישי: ${highscore}`;
+  updateStatsDisplay();
 }
 
-// Save Stats
+function updateThemeOptions() {
+  themeSelect.innerHTML = "";
+  unlockedThemes.forEach(theme => {
+    const option = document.createElement("option");
+    option.value = theme;
+    option.textContent = theme === "dark" ? "כהה" : theme === "light" ? "בהיר" : theme === "neon" ? "ניאון" : theme === "space" ? "חלל" : theme;
+    themeSelect.appendChild(option);
+  });
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  themeSelect.value = savedTheme;
+}
+
+function updateConfettiOptions() {
+  confettiTypeSelect.innerHTML = "";
+  unlockedConfetti.forEach(confetti => {
+    const option = document.createElement("option");
+    option.value = confetti;
+    option.textContent = confetti === "default" ? "רגיל" : confetti === "stars" ? "כוכבים" : confetti === "hearts" ? "לבבות" : confetti === "butterflies" ? "פרפרים" : confetti === "none" ? "ללא" : confetti;
+    confettiTypeSelect.appendChild(option);
+  });
+  const savedConfettiType = localStorage.getItem("confettiType") || "default";
+  confettiTypeSelect.value = savedConfettiType;
+}
+
+function loadAchievements() {
+  const savedUnlockedThemes = JSON.parse(localStorage.getItem(`${username}_unlockedThemes`));
+  if (savedUnlockedThemes) {
+    unlockedThemes = savedUnlockedThemes;
+  }
+  const savedUnlockedConfetti = JSON.parse(localStorage.getItem(`${username}_unlockedConfetti`));
+  if (savedUnlockedConfetti) {
+    unlockedConfetti = savedUnlockedConfetti;
+  }
+  const savedAchievements = JSON.parse(localStorage.getItem(`${username}_achievements`));
+  if (savedAchievements) {
+    achievements = savedAchievements;
+  }
+  updateThemeOptions();
+  updateConfettiOptions();
+  displayAchievements();
+}
+
 function saveStats() {
   if (!Array.isArray(stats.playerStats)) {
     console.warn("playerStats is not an array before saving. Resetting to empty array.");
     stats.playerStats = [];
   }
-  console.log("Saving stats:", stats);
-  localStorage.setItem("stats", JSON.stringify(stats));
+  localStorage.setItem(`${username}_stats`, JSON.stringify(stats));
   updateStatsDisplay();
 }
 
-// Update Stats Display
 function updateStatsDisplay() {
   const successRate = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(2) : 0;
-  console.log("Calculating success rate:", { wins: stats.wins, gamesPlayed: stats.gamesPlayed, successRate: successRate });
   const averageTime = stats.wins > 0 ? (stats.totalTime / stats.wins).toFixed(2) : 0;
 
-  if (successRateDisplay) {
-    successRateDisplay.textContent = `שיעור הצלחה: ${successRate}%`;
-  } else {
-    console.warn("successRateDisplay element not found");
-  }
-
-  if (averageTimeDisplay) {
-    averageTimeDisplay.textContent = `זמן ממוצע לניצחון: ${averageTime} שניות`;
-  } else {
-    console.warn("averageTimeDisplay element not found");
-  }
+  successRateDisplay.textContent = `שיעור הצלחה: ${successRate}%`;
+  averageTimeDisplay.textContent = `זמן ממוצע לניצחון: ${averageTime} שניות`;
 
   let winsDisplay = document.getElementById("winsDisplay");
   if (!winsDisplay) {
     winsDisplay = document.createElement("p");
     winsDisplay.id = "winsDisplay";
-    if (statsMenu) {
-      if (successRateDisplay && statsMenu.contains(successRateDisplay)) {
-        statsMenu.insertBefore(winsDisplay, successRateDisplay);
-      } else {
-        statsMenu.appendChild(winsDisplay);
-      }
-    } else {
-      console.error("statsMenu element not found");
-    }
+    statsMenu.insertBefore(winsDisplay, successRateDisplay);
   }
-  if (winsDisplay) {
-    winsDisplay.textContent = `ניצחונות: ${stats.wins}`;
-  }
+  winsDisplay.textContent = `ניצחונות: ${stats.wins}`;
 
   displayDetailedStats();
   updateStatsChart();
 }
 
-// Returns the stats sorted based on the selected sort option
 function getSortedStats() {
   if (!stats.playerStats || stats.playerStats.length === 0) {
     return [];
   }
 
-  const sortBy = sortStatsSelect ? sortStatsSelect.value : "date";
-  console.log("Sorting by:", sortBy);
-
+  const sortBy = sortStatsSelect.value;
   return [...stats.playerStats].sort((a, b) => {
     if (sortBy === "date") return new Date(b.date) - new Date(a.date);
     if (sortBy === "time") return a.time - b.time;
@@ -852,7 +1215,6 @@ function getSortedStats() {
   });
 }
 
-// Display Detailed Stats
 function displayDetailedStats() {
   const sortedStats = getSortedStats();
   if (sortedStats.length === 0) {
@@ -864,14 +1226,21 @@ function displayDetailedStats() {
   sortedStats.forEach(game => {
     if (game.won) {
       const li = document.createElement("li");
-      const modeInHebrew = modeTranslations[game.mode] || game.mode;
-      li.textContent = `ניצחון: ${game.guesses} ניחושים, ${game.time} שניות, קושי: ${game.difficulty}, מצב: ${modeInHebrew}, רמזים: ${game.hintsUsed}, תאריך: ${game.date}`;
+      let details = "";
+      if (game.gameType === "numberGuess") {
+        const modeInHebrew = modeTranslations[game.mode] || game.mode;
+        details = `ניחוש מספרים - ניצחון: ${game.guesses} ניחושים, ${game.time} שניות, קושי: ${game.difficulty}, מצב: ${modeInHebrew}, רמזים: ${game.hintsUsed}, תאריך: ${game.date}`;
+      } else if (game.gameType === "memoryMatch") {
+        details = `משחק זיכרון - ניצחון: ${game.moves} מהלכים, ${game.time} שניות, קושי: ${game.difficulty}, תאריך: ${game.date}`;
+      } else if (game.gameType === "trivia") {
+        details = `טריוויה - ניצחון: ${game.score} נקודות, ${game.time} שניות, קטגוריה: ${game.category}, תאריך: ${game.date}`;
+      }
+      li.textContent = details;
       detailedStatsList.appendChild(li);
     }
   });
 }
 
-// Updates the stats chart with sorted data
 function updateStatsChart() {
   try {
     const sortedStats = getSortedStats();
@@ -900,8 +1269,8 @@ function updateStatsChart() {
     }
 
     const labels = sortedStats.map((game, index) => `משחק ${index + 1}`);
-    const guessData = sortedStats.map(game => game.guesses);
     const timeData = sortedStats.map(game => game.time);
+    const scoreData = sortedStats.map(game => game.score || game.guesses || game.moves || 0);
 
     const currentTheme = document.body.className;
     const borderColor = currentTheme === "light" ? "rgba(0, 0, 0, 0.8)" : currentTheme === "neon" ? "rgba(0, 255, 255, 1)" : "rgba(75, 192, 192, 1)";
@@ -909,7 +1278,7 @@ function updateStatsChart() {
 
     if (statsChart) {
       statsChart.data.labels = labels;
-      statsChart.data.datasets[0].data = guessData;
+      statsChart.data.datasets[0].data = scoreData;
       statsChart.data.datasets[1].data = timeData;
       statsChart.data.datasets[0].borderColor = borderColor;
       statsChart.data.datasets[0].backgroundColor = backgroundColor;
@@ -923,8 +1292,8 @@ function updateStatsChart() {
           labels: labels,
           datasets: [
             {
-              label: "מספר ניחושים",
-              data: guessData,
+              label: "ניקוד/מהלכים/ניחושים",
+              data: scoreData,
               borderColor: borderColor,
               backgroundColor: backgroundColor,
               fill: true
@@ -948,13 +1317,12 @@ function updateStatsChart() {
     }
   } catch (err) {
     console.error("Error updating stats chart:", err);
-    message.textContent = "שגיאה בעדכון גרף הסטטיסטיקות.";
-    message.classList.add("fail");
+    showMessage("שגיאה בעדכון גרף הסטטיסטיקות.");
   }
 }
 
-// Show Message
-function showMessage(messageText, onClose) {
+// Utility Functions
+function showMessage(messageText, onClose = () => {}) {
   confirmationMessage.textContent = messageText;
   confirmationDialog.classList.remove("hidden");
 
@@ -973,13 +1341,12 @@ function showMessage(messageText, onClose) {
   newConfirmBtn.addEventListener("click", () => {
     confirmationDialog.classList.add("hidden");
     cancelBtn.style.display = "inline-block";
-    if (onClose) onClose();
+    onClose();
     soundManager.play("click");
     vibrationManager.vibrate(50);
   });
 }
 
-// Show Confirmation Dialog
 function showConfirmation(messageText, onConfirm) {
   confirmationMessage.textContent = messageText;
   confirmationDialog.classList.remove("hidden");
@@ -1010,327 +1377,196 @@ function showConfirmation(messageText, onConfirm) {
   });
 }
 
-// Reset Stats
 function resetStats() {
   showConfirmation("האם אתה בטוח שברצונך לאפס את הסטטיסטיקות?", () => {
     stats = { gamesPlayed: 0, wins: 0, totalGuesses: 0, totalTime: 0, playerStats: [] };
     highscore = 0;
-    localStorage.setItem("stats", JSON.stringify(stats));
+    localStorage.setItem(`${username}_stats`, JSON.stringify(stats));
     highscoreDisplay.textContent = `🏆 שיא אישי: ${highscore}`;
+    achievements.forEach(a => a.unlocked = false);
+    localStorage.setItem(`${username}_achievements`, JSON.stringify(achievements));
     updateStatsDisplay();
+    displayAchievements();
     soundManager.play("click");
     vibrationManager.vibrate(50);
   });
 }
 
-// Reset Idle Timer
 function resetIdleTimer() {
   if (gameActive) {
     idleTimer = 0;
   }
 }
 
+// Function to load async data after initialization
+function loadAsyncData() {
+  displayLeaderboard();
+  loadAdminUsers();
+}
+
 // Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM loaded, checking elements:");
-  console.log("statsBtn:", !!statsBtn);
-  console.log("statsMenu:", !!statsMenu);
-  console.log("gameArea:", !!gameArea);
-  console.log("settingsMenu:", !!settingsMenu);
-  console.log("achievementsMenu:", !!achievementsMenu);
-  console.log("leaderboardMenu:", !!leaderboardMenu);
-
   confirmationDialog.classList.add("hidden");
 
-  if (!statsMenu || !successRateDisplay || !averageTimeDisplay) {
-    console.error("Required DOM elements are missing:", {
-      statsMenu: !!statsMenu,
-      successRateDisplay: !!successRateDisplay,
-      averageTimeDisplay: !!averageTimeDisplay
-    });
-  }
+  username = localStorage.getItem("username") || "";
+  isAdmin = false;
 
-  openDB().then(() => {
-    console.log("localStorage before setting username:", localStorage.getItem("username"));
-    username = localStorage.getItem("username") || "";
-    isAdmin = false;
-    console.log("User:", username, "Is Admin:", isAdmin);
-    
-    if (username) {
-      if (username.toLowerCase() === "admin") {
-        usernameSection.classList.remove("hidden");
-        gameArea.classList.add("hidden");
-        usernameInput.value = username;
-        adminPasswordSection.style.display = "block";
-      } else {
-        isAdmin = false;
-        usernameSection.classList.add("hidden");
-        gameArea.classList.remove("hidden");
-        loadSettings();
-        loadStats();
-        loadAchievements();
-        loadParticles();
-      }
-
-      if (clearLeaderboardBtn) {
-        clearLeaderboardBtn.style.display = "none";
-        console.log("Clear Leaderboard button initially set to: none");
-      } else {
-        console.error("clearLeaderboardBtn not found in DOM");
-      }
-    } else {
+  if (username) {
+    if (username.toLowerCase() === "admin") {
       usernameSection.classList.remove("hidden");
       gameArea.classList.add("hidden");
+      usernameInput.value = username;
+      adminPasswordSection.style.display = "block";
+    } else {
+      isAdmin = false;
+      usernameSection.classList.add("hidden");
+      gameArea.classList.remove("hidden");
+      loadSettings();
+      loadStats();
+      loadAchievements();
+      loadParticles();
+      // Load async data after other initialization
+      loadAsyncData();
     }
-  }).catch(err => {
-    console.error("Failed to initialize IndexedDB:", err);
-    showMessage("שגיאה בטעינת מסד הנתונים המקומי. אנא נסה שוב.", () => {});
+    clearLeaderboardBtn.style.display = "none";
+  } else {
+    usernameSection.classList.remove("hidden");
+    gameArea.classList.add("hidden");
+  }
+
+  // Game Selection
+  selectNumberGuessBtn.addEventListener("click", () => {
+    currentGame = "numberGuess";
+    numberGuessGame.classList.remove("hidden");
+    memoryMatchGame.classList.add("hidden");
+    triviaGame.classList.add("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
   });
 
-  if (statsBtn) {
-    console.log("Stats button found, attaching event listener");
-    statsBtn.addEventListener("click", () => {
-      try {
-        console.log("Stats button clicked");
-        if (!statsMenu) {
-          console.error("statsMenu element is missing");
-          return;
-        }
-        if (statsMenu.classList.contains("hidden")) {
-          console.log("Showing stats menu");
-          statsMenu.classList.remove("hidden");
-          statsMenu.style.display = "block";
-          gameArea.classList.add("hidden");
-          settingsMenu.classList.add("hidden");
-          settingsMenu.style.display = "none";
-          achievementsMenu.classList.add("hidden");
-          achievementsMenu.style.display = "none";
-          leaderboardMenu.classList.add("hidden");
-          leaderboardMenu.style.display = "none";
-          updateStatsDisplay();
-        } else {
-          console.log("Hiding stats menu");
-          statsMenu.classList.add("hidden");
-          statsMenu.style.display = "none";
-          gameArea.classList.remove("hidden");
-        }
-        soundManager.play("click");
-        vibrationManager.vibrate(50);
-      } catch (err) {
-        console.error("Error in stats button handler:", err);
-      }
-    });
-  } else {
-    console.error("Stats button not found in DOM");
-  }
+  selectMemoryMatchBtn.addEventListener("click", () => {
+    currentGame = "memoryMatch";
+    numberGuessGame.classList.add("hidden");
+    memoryMatchGame.classList.remove("hidden");
+    triviaGame.classList.add("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (usernameInput) {
-    usernameInput.addEventListener("input", () => {
-      const input = usernameInput.value.trim();
-      if (input.toLowerCase() === "admin") {
-        adminPasswordSection.style.display = "block";
-      } else {
-        adminPasswordSection.style.display = "none";
-        adminPasswordInput.value = "";
-      }
-    });
-  }
+  selectTriviaBtn.addEventListener("click", () => {
+    currentGame = "trivia";
+    numberGuessGame.classList.add("hidden");
+    memoryMatchGame.classList.add("hidden");
+    triviaGame.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (submitUsernameBtn) {
-    submitUsernameBtn.addEventListener("click", () => {
-      const input = usernameInput.value.trim();
-      if (input && /^[א-תa-zA-Z0-9]+$/.test(input)) {
-        const transaction = db.transaction([STORE_NAME], "readonly");
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(input);
+  // Number Guessing Game Event Listeners
+  startGameBtn.addEventListener("click", startNumberGuessGame);
+  stopGameBtn.addEventListener("click", () => endNumberGuessGame(false));
+  playAgainBtn.addEventListener("click", () => {
+    startNumberGuessGame();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+  guessButton.addEventListener("click", checkGuess);
+  guessInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") checkGuess();
+  });
+  hintButton.addEventListener("click", provideHint);
 
-        request.onsuccess = (event) => {
-          if (input.toLowerCase() === "admin") {
-            const password = adminPasswordInput.value;
-            if (password !== ADMIN_PASSWORD) {
-              showMessage("סיסמת מנהל שגויה. אנא נסה שם משתמש או סיסמה אחרים.", () => {});
-              return;
-            }
-          }
+  // Memory Match Game Event Listeners
+  startMemoryMatchBtn.addEventListener("click", startMemoryMatchGame);
+  restartMemoryMatchBtn.addEventListener("click", () => {
+    startMemoryMatchGame();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-          if (event.target.result && input !== username && input.toLowerCase() !== "admin") {
-            showMessage("שם משתמש זה כבר קיים. אנא בחר שם אחר.", () => {});
-            return;
-          }
-          username = input;
-          localStorage.setItem("username", username);
-          console.log("Username set in localStorage:", username);
-          isAdmin = input.toLowerCase() === "admin" && adminPasswordInput.value === ADMIN_PASSWORD;
-          console.log("User:", username, "Is Admin:", isAdmin);
-          usernameSection.classList.add("hidden");
-          gameArea.classList.remove("hidden");
-          cancelUsernameBtn.style.display = "none";
-          if (clearLeaderboardBtn) {
-            clearLeaderboardBtn.style.display = isAdmin ? "inline-block" : "none";
-            console.log("Clear Leaderboard button visibility set to:", clearLeaderboardBtn.style.display);
-          }
-          loadSettings();
-          loadStats();
-          loadAchievements();
-          loadParticles();
-          soundManager.play("click");
-          vibrationManager.vibrate(50);
-        };
+  // Trivia Game Event Listeners
+  startTriviaBtn.addEventListener("click", startTriviaGame);
+  restartTriviaBtn.addEventListener("click", () => {
+    startTriviaGame();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-        request.onerror = (event) => {
-          console.error("Error checking username:", event.target.error);
-          showMessage("שגיאה בבדיקת שם המשתמש: " + (event.target.error.message || "תקלה לא ידועה"), () => {});
-        };
-      } else {
-        showMessage("אנא הזן שם משתמש תקין (אותיות בעברית, אנגלית או מספרים בלבד)", () => {});
-      }
-    });
-  }
-
-  if (changeUsernameBtn) {
-    changeUsernameBtn.addEventListener("click", () => {
-      usernameSection.classList.remove("hidden");
-      gameArea.classList.add("hidden");
-      settingsMenu.classList.add("hidden");
-      settingsMenu.style.display = "none";
-      statsMenu.classList.add("hidden");
-      statsMenu.style.display = "none";
-      achievementsMenu.classList.add("hidden");
-      achievementsMenu.style.display = "none";
-      leaderboardMenu.classList.add("hidden");
-      leaderboardMenu.style.display = "none";
-      submitUsernameBtn.style.display = "inline-block";
-      cancelUsernameBtn.style.display = "inline-block";
-      usernameInput.value = username;
-      adminPasswordSection.style.display = username.toLowerCase() === "admin" ? "block" : "none";
-      adminPasswordInput.value = "";
-      isAdmin = false;
-      if (clearLeaderboardBtn) {
-        clearLeaderboardBtn.style.display = "none";
-      }
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
-
-  if (cancelUsernameBtn) {
-    cancelUsernameBtn.addEventListener("click", () => {
-      usernameSection.classList.add("hidden");
+  // General Event Listeners
+  settingsBtn.addEventListener("click", () => {
+    if (settingsMenu.classList.contains("hidden")) {
       settingsMenu.classList.remove("hidden");
-      settingsMenu.style.display = "block";
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
-
-  if (startGameBtn) startGameBtn.addEventListener("click", startGame);
-
-  if (stopGameBtn) {
-    stopGameBtn.addEventListener("click", () => {
-      endGame(false);
-    });
-  }
-
-  if (playAgainBtn) {
-    playAgainBtn.addEventListener("click", () => {
-      startGame(); // Restart the game
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
-
-  if (guessButton) guessButton.addEventListener("click", checkGuess);
-
-  if (guessInput) {
-    guessInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") checkGuess();
-    });
-  }
-
-  if (hintButton) hintButton.addEventListener("click", provideHint);
-
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => {
-      if (settingsMenu.classList.contains("hidden")) {
-        settingsMenu.classList.remove("hidden");
-        settingsMenu.style.display = "block";
-        gameArea.classList.add("hidden");
-        statsMenu.classList.add("hidden");
-        statsMenu.style.display = "none";
-        achievementsMenu.classList.add("hidden");
-        achievementsMenu.style.display = "none";
-        leaderboardMenu.classList.add("hidden");
-        leaderboardMenu.style.display = "none";
+      gameArea.classList.add("hidden");
+      statsMenu.classList.add("hidden");
+      achievementsMenu.classList.add("hidden");
+      leaderboardMenu.classList.add("hidden");
+      adminPanel.classList.add("hidden");
+      if (isAdmin) {
+        changeUsernameBtn.textContent = "פאנל ניהול";
       } else {
-        settingsMenu.classList.add("hidden");
-        settingsMenu.style.display = "none";
-        gameArea.classList.remove("hidden");
+        changeUsernameBtn.textContent = "שנה שם משתמש";
       }
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+    } else {
+      settingsMenu.classList.add("hidden");
+      gameArea.classList.remove("hidden");
+    }
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (viewStatsBtn) {
-    viewStatsBtn.addEventListener("click", () => {
-      console.log("View stats button clicked");
-      if (!statsMenu) {
-        console.error("statsMenu element is missing");
-        return;
-      }
+  statsBtn.addEventListener("click", () => {
+    if (statsMenu.classList.contains("hidden")) {
       statsMenu.classList.remove("hidden");
-      statsMenu.style.display = "block";
       gameArea.classList.add("hidden");
       settingsMenu.classList.add("hidden");
-      settingsMenu.style.display = "none";
       achievementsMenu.classList.add("hidden");
-      achievementsMenu.style.display = "none";
       leaderboardMenu.classList.add("hidden");
-      leaderboardMenu.style.display = "none";
+      adminPanel.classList.add("hidden");
       updateStatsDisplay();
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-      console.log("Stats menu shown, game area hidden");
-    });
-  }
-
-  if (viewAchievementsBtn) {
-    viewAchievementsBtn.addEventListener("click", () => {
-      achievementsMenu.classList.remove("hidden");
-      achievementsMenu.style.display = "block";
-      gameArea.classList.add("hidden");
+    } else {
       statsMenu.classList.add("hidden");
-      statsMenu.style.display = "none";
-      settingsMenu.classList.add("hidden");
-      settingsMenu.style.display = "none";
-      leaderboardMenu.classList.add("hidden");
-      leaderboardMenu.style.display = "none";
-      displayAchievements();
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+      gameArea.classList.remove("hidden");
+    }
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (viewLeaderboardBtn) {
-    viewLeaderboardBtn.addEventListener("click", () => {
-      leaderboardMenu.classList.remove("hidden");
-      leaderboardMenu.style.display = "block";
-      gameArea.classList.add("hidden");
-      statsMenu.classList.add("hidden");
-      statsMenu.style.display = "none";
-      settingsMenu.classList.add("hidden");
-      settingsMenu.style.display = "none";
-      achievementsMenu.classList.add("hidden");
-      achievementsMenu.style.display = "none";
-      displayLeaderboard();
-      if (clearLeaderboardBtn) {
-        clearLeaderboardBtn.style.display = isAdmin ? "inline-block" : "none";
-        console.log("Clear Leaderboard button visibility set to:", clearLeaderboardBtn.style.display);
-      }
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+  viewStatsBtn.addEventListener("click", () => {
+    statsMenu.classList.remove("hidden");
+    gameArea.classList.add("hidden");
+    settingsMenu.classList.add("hidden");
+    achievementsMenu.classList.add("hidden");
+    leaderboardMenu.classList.add("hidden");
+    adminPanel.classList.add("hidden");
+    updateStatsDisplay();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  viewAchievementsBtn.addEventListener("click", () => {
+    achievementsMenu.classList.remove("hidden");
+    gameArea.classList.add("hidden");
+    statsMenu.classList.add("hidden");
+    settingsMenu.classList.add("hidden");
+    leaderboardMenu.classList.add("hidden");
+    adminPanel.classList.add("hidden");
+    displayAchievements();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  viewLeaderboardBtn.addEventListener("click", () => {
+    leaderboardMenu.classList.remove("hidden");
+    gameArea.classList.add("hidden");
+    statsMenu.classList.add("hidden");
+    settingsMenu.classList.add("hidden");
+    achievementsMenu.classList.add("hidden");
+    adminPanel.classList.add("hidden");
+    displayLeaderboard();
+    clearLeaderboardBtn.style.display = isAdmin ? "inline-block" : "none";
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
   if (clearLeaderboardBtn) {
     clearLeaderboardBtn.addEventListener("click", () => {
@@ -1340,152 +1576,260 @@ document.addEventListener("DOMContentLoaded", () => {
         vibrationManager.vibrate(50);
       });
     });
+  } else {
+    console.warn("clearLeaderboardBtn element not found in the DOM");
   }
 
-  if (muteBtn) {
-    muteBtn.addEventListener("click", () => {
-      soundManager.toggleMute();
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+  muteBtn.addEventListener("click", () => {
+    soundManager.toggleMute();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (vibrationBtn) {
-    vibrationBtn.addEventListener("click", () => {
-      vibrationManager.toggleVibration();
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+  vibrationBtn.addEventListener("click", () => {
+    vibrationManager.toggleVibration();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (volumeControl) {
-    volumeControl.addEventListener("input", () => {
-      soundManager.volume = parseFloat(volumeControl.value);
-      soundManager.updateVolume();
-    });
-  }
+  volumeControl.addEventListener("input", () => {
+    soundManager.volume = parseFloat(volumeControl.value);
+    soundManager.updateVolume();
+  });
 
-  if (themeSelect) {
-    themeSelect.addEventListener("change", () => {
-      console.log("Theme changed to:", themeSelect.value);
-      document.body.classList.remove("dark", "light", "neon", "space", "gradient");
-      document.body.classList.add(themeSelect.value);
-      localStorage.setItem("theme", themeSelect.value);
-      localStorage.removeItem("customGradient");
-      document.body.style.background = "";
-      document.body.style.backgroundSize = "";
-      document.body.style.animation = "";
-      document.body.style.backgroundColor = "";
-      loadParticles();
-      updateStatsChart();
-      console.log("After theme change, body styles:", {
-        background: document.body.style.background,
-        backgroundColor: document.body.style.backgroundColor,
-        classList: document.body.classList.toString()
-      });
-    });
-  }
+  themeSelect.addEventListener("change", () => {
+    document.body.classList.remove("dark", "light", "neon", "space", "gradient", "rgb", "slow", "medium", "fast");
+    document.body.classList.add(themeSelect.value);
+    localStorage.setItem("theme", themeSelect.value);
+    localStorage.removeItem("customGradient");
+    stopRGBWaves();
+    rgbBtn.textContent = "הפעל גלי צבעים";
+    localStorage.setItem("rgbEnabled", false);
+    loadParticles();
+    updateStatsChart();
+  });
 
-  if (confettiTypeSelect) {
-    confettiTypeSelect.addEventListener("change", () => {
-      localStorage.setItem("confettiType", confettiTypeSelect.value);
-    });
-  }
+  confettiTypeSelect.addEventListener("change", () => {
+    localStorage.setItem("confettiType", confettiTypeSelect.value);
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (confettiAmountSelect) {
-    confettiAmountSelect.addEventListener("change", () => {
-      localStorage.setItem("confettiAmount", confettiAmountSelect.value);
-    });
-  }
+  confettiAmountSelect.addEventListener("change", () => {
+    localStorage.setItem("confettiAmount", confettiAmountSelect.value);
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (applyGradientBtn) {
-    applyGradientBtn.addEventListener("click", () => {
-      applyCustomGradient(gradientColor1.value, gradientColor2.value);
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+  applyGradientBtn.addEventListener("click", () => {
+    applyCustomGradient(gradientColor1.value, gradientColor2.value);
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (resetGradientBtn) {
-    resetGradientBtn.addEventListener("click", () => {
-      const savedTheme = localStorage.getItem("theme") || "dark";
-      document.body.classList.remove("dark", "light", "neon", "space", "gradient");
-      document.body.classList.add(savedTheme);
-      document.body.style.background = "";
-      document.body.style.backgroundSize = "";
-      document.body.style.animation = "";
-      document.body.style.backgroundColor = "";
-      localStorage.removeItem("customGradient");
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-      console.log("Gradient reset, theme applied:", savedTheme);
-      console.log("Current body styles:", {
-        background: document.body.style.background,
-        backgroundColor: document.body.style.backgroundColor,
-        classList: document.body.classList.toString()
-      });
-    });
-  }
+  resetGradientBtn.addEventListener("click", () => {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    document.body.classList.remove("dark", "light", "neon", "space", "gradient", "rgb", "slow", "medium", "fast");
+    document.body.classList.add(savedTheme);
+    document.body.style.background = "";
+    document.body.style.backgroundSize = "";
+    document.body.style.animation = "";
+    document.body.style.backgroundColor = "";
+    localStorage.removeItem("customGradient");
+    stopRGBWaves();
+    rgbBtn.textContent = "הפעל גלי צבעים";
+    localStorage.setItem("rgbEnabled", false);
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (backToGameBtn) {
-    backToGameBtn.addEventListener("click", () => {
-      settingsMenu.classList.add("hidden");
-      settingsMenu.style.display = "none";
-      gameArea.classList.remove("hidden");
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
-
-  if (backToGameFromStatsBtn) {
-    backToGameFromStatsBtn.addEventListener("click", () => {
-      console.log("Back to game from stats clicked");
-      if (!statsMenu) {
-        console.error("statsMenu element is missing");
-        return;
+  if (rgbBtn) {
+    rgbBtn.addEventListener("click", () => {
+      const rgbEnabled = !document.body.classList.contains("rgb");
+      if (rgbEnabled) {
+        document.body.style.background = "";
+        document.body.style.backgroundImage = "";
+        document.body.style.backgroundSize = "";
+        document.body.style.animation = "";
+        document.body.style.animationFillMode = "";
+        document.body.style.backgroundColor = "";
+        localStorage.removeItem("customGradient");
+        document.body.classList.remove("dark", "light", "neon", "space", "gradient", "rgb");
+        document.body.classList.add("rgb");
+        startRGBWaves();
+        rgbBtn.textContent = "כבה גלי צבעים";
+        localStorage.setItem("rgbEnabled", true);
+      } else {
+        document.body.classList.remove("rgb");
+        document.body.style.background = "";
+        document.body.style.backgroundImage = "";
+        document.body.style.backgroundSize = "";
+        document.body.style.animation = "";
+        document.body.style.animationFillMode = "";
+        document.body.style.backgroundColor = "";
+        const savedTheme = localStorage.getItem("theme") || "dark";
+        document.body.classList.add(savedTheme);
+        stopRGBWaves();
+        rgbBtn.textContent = "הפעל גלי צבעים";
+        localStorage.setItem("rgbEnabled", false);
       }
+      soundManager.play("click");
+      vibrationManager.vibrate(50);
+    });
+  }
+
+
+  backToGameBtn.addEventListener("click", () => {
+    settingsMenu.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  backToGameFromStatsBtn.addEventListener("click", () => {
+    statsMenu.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  backToGameFromAchievementsBtn.addEventListener("click", () => {
+    achievementsMenu.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  backToGameFromLeaderboardBtn.addEventListener("click", () => {
+    leaderboardMenu.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  backToGameFromAdminBtn.addEventListener("click", () => {
+    adminPanel.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  resetStatsBtn.addEventListener("click", resetStats);
+
+  sortStatsSelect.addEventListener("change", () => {
+    displayDetailedStats();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  // Admin Panel Event Listeners
+  adminUserSelect.addEventListener("change", viewUserPoints);
+
+  adminBanUserSelect.addEventListener("change", () => {
+    adminBanMessage.textContent = "";
+  });
+
+  banUserBtn.addEventListener("click", () => {
+    banUser();
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
+
+  resetLeaderboardBtn.addEventListener("click", () => {
+    showConfirmation("האם אתה בטוח שברצונך לנקות את הדירוג? פעולה זו אינה ניתנת לביטול.", () => {
+      clearLeaderboard();
+      soundManager.play("click");
+      vibrationManager.vibrate(50);
+    });
+  });
+
+  // Username Section Event Listeners
+  usernameInput.addEventListener("input", () => {
+    const input = usernameInput.value.trim();
+    if (input.toLowerCase() === "admin") {
+      adminPasswordSection.style.display = "block";
+    } else {
+      adminPasswordSection.style.display = "none";
+      adminPasswordInput.value = "";
+    }
+  });
+
+  submitUsernameBtn.addEventListener("click", () => {
+    const input = usernameInput.value.trim();
+    if (input && /^[א-תa-zA-Z0-9]+$/.test(input)) {
+      const leaderboardRef = database.ref(`leaderboard/${input}`);
+      leaderboardRef.once("value", snapshot => {
+        if (input.toLowerCase() === "admin") {
+          const password = adminPasswordInput.value;
+          if (password !== ADMIN_PASSWORD) {
+            showMessage("סיסמת מנהל שגויה. אנא נסה שם משתמש או סיסמה אחרים.");
+            return;
+          }
+        }
+
+        if (snapshot.exists() && input !== username && input.toLowerCase() !== "admin") {
+          showMessage("שם משתמש זה כבר קיים. אנא בחר שם אחר.");
+          return;
+        }
+
+        username = input;
+        localStorage.setItem("username", username);
+        isAdmin = input.toLowerCase() === "admin" && adminPasswordInput.value === ADMIN_PASSWORD;
+        usernameSection.classList.add("hidden");
+        gameArea.classList.remove("hidden");
+        cancelUsernameBtn.style.display = "none";
+        clearLeaderboardBtn.style.display = isAdmin ? "inline-block" : "none";
+        loadSettings();
+        loadStats();
+        loadAchievements();
+        loadParticles();
+        loadAsyncData(); // Load async data after initialization
+        soundManager.play("click");
+        vibrationManager.vibrate(50);
+      });
+    } else {
+      showMessage("אנא הזן שם משתמש תקין (אותיות בעברית, אנגלית או מספרים בלבד)");
+    }
+  });
+
+  changeUsernameBtn.addEventListener("click", () => {
+    if (isAdmin) {
+      adminPanel.classList.remove("hidden");
+      gameArea.classList.add("hidden");
+      settingsMenu.classList.add("hidden");
       statsMenu.classList.add("hidden");
-      statsMenu.style.display = "none";
-      gameArea.classList.remove("hidden");
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-      console.log("Stats menu hidden, game area shown");
-    });
-  }
-
-  if (backToGameFromAchievementsBtn) {
-    backToGameFromAchievementsBtn.addEventListener("click", () => {
       achievementsMenu.classList.add("hidden");
-      achievementsMenu.style.display = "none";
-      gameArea.classList.remove("hidden");
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
-
-  if (backToGameFromLeaderboardBtn) {
-    backToGameFromLeaderboardBtn.addEventListener("click", () => {
       leaderboardMenu.classList.add("hidden");
-      leaderboardMenu.style.display = "none";
-      gameArea.classList.remove("hidden");
-      soundManager.play("click");
-      vibrationManager.vibrate(50);
-    });
-  }
+    } else {
+      usernameSection.classList.remove("hidden");
+      gameArea.classList.add("hidden");
+      settingsMenu.classList.add("hidden");
+      statsMenu.classList.add("hidden");
+      achievementsMenu.classList.add("hidden");
+      leaderboardMenu.classList.add("hidden");
+      submitUsernameBtn.style.display = "inline-block";
+      cancelUsernameBtn.style.display = "inline-block";
+      usernameInput.value = username;
+      adminPasswordSection.style.display = username.toLowerCase() === "admin" ? "block" : "none";
+      adminPasswordInput.value = "";
+      isAdmin = false;
+      clearLeaderboardBtn.style.display = "none";
+    }
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (resetStatsBtn) resetStatsBtn.addEventListener("click", resetStats);
+  cancelUsernameBtn.addEventListener("click", () => {
+    usernameSection.classList.add("hidden");
+    settingsMenu.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
-  if (sortStatsSelect) {
-    sortStatsSelect.addEventListener("change", () => {
-      console.log("Sort stats changed");
-      displayDetailedStats();
-    });
-  }
-
+  // General Event Listeners for Interactivity
   document.addEventListener("click", (event) => {
     if (gameActive && event.target !== guessInput && !guessInput.contains(event.target)) {
       guessInput.blur();
-      console.log("Blurred guessInput due to click outside");
     }
   });
 
@@ -1493,7 +1837,6 @@ document.addEventListener("DOMContentLoaded", () => {
     resetIdleTimer();
     if (gameActive && event.target !== guessInput && !guessInput.contains(event.target)) {
       guessInput.blur();
-      console.log("Blurred guessInput due to touch outside");
     }
   });
 

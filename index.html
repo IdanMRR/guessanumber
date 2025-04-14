@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>משחק ניחושים</title>
+  <title>משחקי רשת מדהימים</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,6 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="dark">
   <!-- שכבת חלקיקים ברקע -->
@@ -32,40 +34,94 @@
   </div>
 
   <div id="gameArea">
-    <h1>משחק ניחושים</h1>
-    <p id="subtitle">נחש את המספר וזכה! ✨</p>
-    <div id="difficultySection">
-      <label for="difficulty">בחר רמת קושי:</label>
-      <span class="new-arrow" aria-hidden="true">▼</span>
-      <select id="difficulty" aria-label="בחר רמת קושי">
-        <option value="10">קל (1-10)</option>
-        <option value="50">בינוני (1-50)</option>
-        <option value="100">קשה (1-100)</option>
-      </select>
+    <h1>משחקי רשת מדהימים</h1>
+    <p id="subtitle">בחר משחק ותיהנה! ✨</p>
+
+    <!-- Game Selection Menu -->
+    <div id="gameSelection" class="game-selection">
+      <h3>בחר משחק:</h3>
+      <button id="selectNumberGuessBtn" aria-label="משחק ניחוש מספרים">ניחוש מספרים</button>
+      <button id="selectMemoryMatchBtn" aria-label="משחק זיכרון">משחק זיכרון</button>
+      <button id="selectTriviaBtn" aria-label="משחק טריוויה">טריוויה</button>
     </div>
-    <div id="modeSection">
-      <label for="gameMode">בחר מצב משחק:</label>
-      <span class="new-arrow" aria-hidden="true">▼</span>
-      <select id="gameMode" aria-label="בחר מצב משחק">
-        <option value="normal">רגיל</option>
-        <option value="fast">מהיר (30 שניות)</option>
-        <option value="noHints">בלי רמזים</option>
-        <option value="dynamicRange">טווח משתנה</option>
-      </select>
+
+    <!-- Number Guessing Game -->
+    <div id="numberGuessGame" class="game-section">
+      <div id="difficultySection">
+        <label for="difficulty">בחר רמת קושי:</label>
+        <span class="new-arrow" aria-hidden="true">▼</span>
+        <select id="difficulty" aria-label="בחר רמת קושי">
+          <option value="10">קל (1-10)</option>
+          <option value="50">בינוני (1-50)</option>
+          <option value="100">קשה (1-100)</option>
+        </select>
+      </div>
+      <div id="modeSection">
+        <label for="gameMode">בחר מצב משחק:</label>
+        <span class="new-arrow" aria-hidden="true">▼</span>
+        <select id="gameMode" aria-label="בחר מצב משחק">
+          <option value="normal">רגיל</option>
+          <option value="fast">מהיר (30 שניות)</option>
+          <option value="noHints">בלי רמזים</option>
+          <option value="dynamicRange">טווח משתנה</option>
+        </select>
+      </div>
+      <p id="highscore" aria-live="polite">🏆 שיא אישי: --</p>
+      <button id="startGameBtn" aria-label="התחל משחק חדש">התחל משחק</button>
+      <button id="stopGameBtn" style="display: none;" aria-label="עצור משחק">עצור משחק</button>
+      <div id="inputContainer" class="hidden">
+        <input type="number" id="guessInput" placeholder="הזן ניחוש" aria-label="הזן את הניחוש שלך" disabled>
+        <button id="guessButton" aria-label="בצע ניחוש">נחש!</button>
+        <button id="hintButton" aria-label="קבל רמז">רמז</button>
+      </div>
+      <p id="message" aria-live="assertive"></p>
+      <button id="playAgainBtn" style="display: none;" aria-label="שחק שוב">שחק שוב</button>
+      <div id="livesDisplay" class="lives-display" aria-label="מספר החיים הנותרים"></div>
+      <p id="timer" aria-live="polite"></p>
+      <p id="idleTimer" aria-live="polite"></p>
     </div>
-    <p id="highscore" aria-live="polite">🏆 שיא אישי: --</p>
-    <button id="startGameBtn" aria-label="התחל משחק חדש">התחל משחק</button>
-    <button id="stopGameBtn" style="display: none;" aria-label="עצור משחק">עצור משחק</button>
-    <div id="inputContainer" class="hidden">
-      <input type="number" id="guessInput" placeholder="הזן ניחוש" aria-label="הזן את הניחוש שלך" disabled>
-      <button id="guessButton" aria-label="בצע ניחוש">נחש!</button>
-      <button id="hintButton" aria-label="קבל רמז">רמז</button>
+
+    <!-- Memory Match Game -->
+    <div id="memoryMatchGame" class="game-section hidden">
+      <div id="memoryDifficultySection">
+        <label for="memoryDifficulty">בחר רמת קושי:</label>
+        <span class="new-arrow" aria-hidden="true">▼</span>
+        <select id="memoryDifficulty" aria-label="בחר רמת קושי למשחק זיכרון">
+          <option value="4">קל (4 קלפים)</option>
+          <option value="8">בינוני (8 קלפים)</option>
+          <option value="12">קשה (12 קלפים)</option>
+        </select>
+      </div>
+      <button id="startMemoryMatchBtn" aria-label="התחל משחק זיכרון">התחל משחק זיכרון</button>
+      <div id="memoryBoard" class="memory-board"></div>
+      <p id="memoryMessage" aria-live="assertive"></p>
+      <p id="memoryTimer" aria-live="polite"></p>
+      <p id="memoryMoves" aria-live="polite"></p>
+      <button id="restartMemoryMatchBtn" style="display: none;" aria-label="שחק שוב משחק זיכרון">שחק שוב</button>
     </div>
-    <p id="message" aria-live="assertive"></p>
-    <button id="playAgainBtn" style="display: none;" aria-label="שחק שוב">שחק שוב</button>
-    <div id="livesDisplay" class="lives-display" aria-label="מספר החיים הנותרים"></div>
-    <p id="timer" aria-live="polite"></p>
-    <p id="idleTimer" aria-live="polite"></p>
+
+    <!-- Trivia Game -->
+    <div id="triviaGame" class="game-section hidden">
+      <div id="triviaCategorySection">
+        <label for="triviaCategory">בחר קטגוריה:</label>
+        <span class="new-arrow" aria-hidden="true">▼</span>
+        <select id="triviaCategory" aria-label="בחר קטגוריה לטריוויה">
+          <option value="general">ידע כללי</option>
+          <option value="history">היסטוריה</option>
+          <option value="science">מדע</option>
+        </select>
+      </div>
+      <button id="startTriviaBtn" aria-label="התחל משחק טריוויה">התחל טריוויה</button>
+      <div id="triviaQuestion" class="hidden">
+        <p id="triviaQuestionText" aria-live="assertive"></p>
+        <div id="triviaOptions" class="trivia-options"></div>
+      </div>
+      <p id="triviaMessage" aria-live="assertive"></p>
+      <p id="triviaScore" aria-live="polite"></p>
+      <p id="triviaTimer" aria-live="polite"></p>
+      <button id="restartTriviaBtn" style="display: none;" aria-label="שחק שוב טריוויה">שחק שוב</button>
+    </div>
+
     <button id="viewStatsBtn" aria-label="צפה בסטטיסטיקות">📊 צפה בסטטיסטיקות</button>
     <button id="viewAchievementsBtn" aria-label="צפה בהישגים">🏅 צפה בהישגים</button>
     <button id="viewLeaderboardBtn" aria-label="צפה בדירוג">🏆 צפה בדירוג</button>
@@ -148,7 +204,7 @@
         </select>
       </div>
       <canvas id="statsChart" tabindex="0" aria-label="גרף סטטיסטיקות משחק: מספר ניחושים וזמן לפי משחקים"></canvas>
-            <div id="detailedStats">
+      <div id="detailedStats">
         <h4>פרטי ניצחונות:</h4>
         <ul id="detailedStatsList" aria-label="רשימת ניצחונות מפורטת"></ul>
       </div>
@@ -178,6 +234,30 @@
       <button id="backToGameFromLeaderboard" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
   </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="hidden">
+    <div class="menuArea">
+      <h3>פאנל ניהול</h3>
+      <div class="admin-section">
+        <h4>צפה בנקודות משתמשים</h4>
+        <select id="adminUserSelect" aria-label="בחר משתמש לצפייה בנקודות"></select>
+        <p id="adminUserPoints" aria-live="polite"></p>
+      </div>
+      <div class="admin-section">
+        <h4>חסום משתמש</h4>
+        <select id="adminBanUserSelect" aria-label="בחר משתמש לחסימה"></select>
+        <button id="banUserBtn" aria-label="חסום משתמש">חסום משתמש</button>
+        <p id="adminBanMessage" aria-live="polite"></p>
+      </div>
+      <div class="admin-section">
+        <h4>ניהול דירוג</h4>
+        <button id="resetLeaderboardBtn" aria-label="אפס דירוג">אפס דירוג</button>
+      </div>
+      <button id="backToGameFromAdmin" aria-label="חזור למשחק">חזור למשחק</button>
+    </div>
+  </div>
+
   <div id="confirmationDialog" class="hidden">
     <div class="confirmation-content">
       <h3 id="confirmationMessage">האם אתה בטוח?</h3>
