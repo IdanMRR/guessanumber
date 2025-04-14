@@ -81,6 +81,7 @@ const gradientColor2 = document.getElementById("gradientColor2");
 const applyGradientBtn = document.getElementById("applyGradientBtn");
 const resetGradientBtn = document.getElementById("resetGradientBtn");
 const rgbBtn = document.getElementById("rgbBtn");
+const performanceModeBtn = document.getElementById("performanceModeBtn");
 const vibrationSupportMessage = document.getElementById("vibrationSupportMessage");
 const backToGameBtn = document.getElementById("backToGame");
 const backToGameFromStatsBtn = document.getElementById("backToGameFromStats");
@@ -194,6 +195,7 @@ const ADMIN_PASSWORD = "Ghsi1231210";
 let currentGame = "numberGuess";
 let username = "";
 let isAdmin = false;
+let performanceMode = JSON.parse(localStorage.getItem("performanceMode")) || false; // New variable
 let bannedUsers = JSON.parse(localStorage.getItem("bannedUsers")) || [];
 let statsChart = null;
 let rgbInterval = null;
@@ -271,7 +273,6 @@ let dailyChallenges = [
 let completedChallenges = JSON.parse(localStorage.getItem(`${username}_completedChallenges`)) || { date: "", challenges: [] };
 
 // Load Settings
-// Load Settings
 function loadSettings() {
   const savedTheme = localStorage.getItem("theme") || "dark";
   themeSelect.value = savedTheme;
@@ -298,10 +299,12 @@ function loadSettings() {
   }
 
   const rgbEnabled = localStorage.getItem("rgbEnabled") === "true";
-  if (rgbEnabled) {
+  if (rgbEnabled && !performanceMode) {
     document.body.classList.add("rgb");
     startRGBWaves();
-    rgbBtn.textContent = "כבה גלי צבעים";
+    if (rgbBtn) {
+      rgbBtn.textContent = "כבה גלי צבעים";
+    }
   }
 
   // Add safeguard for soundManager
@@ -311,8 +314,12 @@ function loadSettings() {
     console.error("soundManager is not initialized yet");
     volumeControl.value = 1; // Fallback value
   }
-}
 
+  // Set initial state of performance mode button
+  if (performanceModeBtn) {
+    performanceModeBtn.textContent = performanceMode ? "כבה מצב ביצועים" : "הפעל מצב ביצועים";
+  }
+}
 // Apply Custom Gradient
 function applyCustomGradient(color1, color2) {
   document.body.classList.remove("dark", "light", "neon", "space", "gradient", "rgb", "slow", "medium", "fast");
@@ -325,6 +332,7 @@ function applyCustomGradient(color1, color2) {
 
 // RGB Waves
 function startRGBWaves() {
+  if (performanceMode) return; // Skip if performance mode is enabled
   stopRGBWaves();
   document.body.style.background = "none";
   document.body.style.backgroundImage = "none";
@@ -340,7 +348,6 @@ function startRGBWaves() {
     document.body.style.backgroundImage = "none";
   }, intervalTime);
 }
-
 function stopRGBWaves() {
   if (rgbInterval) {
     clearInterval(rgbInterval);
@@ -350,72 +357,72 @@ function stopRGBWaves() {
 }
 
 // Initialize Particles
-let particlesLoaded = false;
 function loadParticles() {
-  if (particlesLoaded) return;
-  particlesJS("particles-js", {
-    particles: {
-      number: { value: 50, density: { enable: true, value_area: 800 } },
-      color: { value: document.body.classList.contains("light") ? "#333333" : "#ffffff" },
-      shape: { type: "circle" },
-      opacity: { value: 0.5, random: false },
-      size: { value: 3, random: true },
-      line_linked: { enable: true, distance: 150, color: document.body.classList.contains("light") ? "#333333" : "#ffffff", opacity: 0.4, width: 1 },
-      move: { enable: true, speed: 2, direction: "none", random: false, straight: false, out_mode: "out", bounce: false }
-    },
-    interactivity: {
-      detect_on: "canvas",
-      events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
-      modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
-    },
-    retina_detect: true
-  });
-  particlesLoaded = true;
+  if (performanceMode) {
+    // Clear particles if performance mode is enabled
+    const particlesElement = document.getElementById("particles-js");
+    if (particlesElement) {
+      particlesElement.innerHTML = "";
+    }
+    if (window.pJSDom && window.pJSDom.length) {
+      window.pJSDom.forEach(p => p.pJS.fn.vendors.destroypJS());
+      window.pJSDom = [];
+    }
+    return;
+  }
+  const savedTheme = localStorage.getItem("theme") || "dark";
+  if (savedTheme === "space") {
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        shape: { type: "star", stroke: { width: 0, color: "#000000" } },
+        opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false } },
+        size: { value: 3, random: true, anim: { enable: false, speed: 40, size_min: 0.1, sync: false } },
+        line_linked: { enable: false },
+        move: { enable: true, speed: 2, direction: "none", random: true, straight: false, out_mode: "out", bounce: false }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+        modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+  } else {
+    const particlesElement = document.getElementById("particles-js");
+    if (particlesElement) {
+      particlesElement.innerHTML = "";
+    }
+    if (window.pJSDom && window.pJSDom.length) {
+      window.pJSDom.forEach(p => p.pJS.fn.vendors.destroypJS());
+      window.pJSDom = [];
+    }
+  }
 }
 
 // Show Confetti
-function showConfetti() {
-  const confettiType = confettiTypeSelect.value;
-  const confettiAmount = confettiAmountSelect.value;
-  if (confettiType === "none") return;
+function showConfetti() {function showConfetti() {
+  if (performanceMode) return; // Skip if performance mode is enabled
+  const savedConfettiType = localStorage.getItem("confettiType") || "default";
+  const savedConfettiAmount = localStorage.getItem("confettiAmount") || "medium";
+  if (savedConfettiType === "none") return;
 
-  let count = confettiAmount === "light" ? 30 : confettiAmount === "medium" ? 60 : 120;
-  let shapes = confettiType === "stars" ? ["star"] : confettiType === "hearts" ? ["circle"] : confettiType === "butterflies" ? ["circle"] : ["circle", "square"];
+  const amountMap = { light: 50, medium: 100, heavy: 200 };
+  const count = amountMap[savedConfettiAmount] || 100;
 
-  try {
-    confetti({
-      particleCount: count,
-      spread: 70,
-      origin: { y: 0.6 },
-      shapes: shapes,
-      colors: confettiType === "hearts" ? ["#ff0000", "#ff69b4"] : undefined
-    });
-  } catch (err) {
-    console.error("Confetti error:", err);
-    showMessage("שגיאה בהפעלת קונפטי. בדוק את חיבור האינטרנט או נסה שוב.");
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+  if (savedConfettiType === "stars") {
+    confetti(Object.assign({}, defaults, { particleCount: count, shapes: ["star"], colors: ["#FFD700", "#FFA500", "#FFFF00"] }));
+  } else if (savedConfettiType === "hearts") {
+    confetti(Object.assign({}, defaults, { particleCount: count, shapes: ["heart"], colors: ["#FF0000", "#FF69B4", "#FF1493"] }));
+  } else if (savedConfettiType === "butterflies") {
+    confetti(Object.assign({}, defaults, { particleCount: count, shapes: ["circle"], colors: ["#FF6347", "#FFD700", "#ADFF2F"], scalar: 1.5, spread: 180 }));
+  } else {
+    confetti(Object.assign({}, defaults, { particleCount: count }));
   }
-
-  for (let i = 0; i < 20; i++) {
-    const sparkle = document.createElement("div");
-    sparkle.classList.add("sparkle");
-    if (confettiType === "butterflies") {
-      sparkle.textContent = "🦋";
-      sparkle.style.fontSize = "20px";
-    } else if (confettiType === "stars") {
-      sparkle.textContent = "⭐";
-      sparkle.style.fontSize = "20px";
-    } else if (confettiType === "hearts") {
-      sparkle.textContent = "❤️";
-      sparkle.style.fontSize = "20px";
-    }
-    sparkle.style.left = `${Math.random() * 100}vw`;
-    sparkle.style.top = `${Math.random() * 100}vh`;
-    document.body.appendChild(sparkle);
-    sparkle.addEventListener("animationend", () => {
-      sparkle.remove();
-    });
-  }
-}
+}}
 
 // Number Guessing Game Logic
 function startNumberGuessGame() {
@@ -1645,6 +1652,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (rgbBtn) {
     rgbBtn.addEventListener("click", () => {
+      if (performanceMode) {
+        showMessage("מצב ביצועים מופעל - גלי צבעים מושבתים");
+        return;
+      }
       const rgbEnabled = !document.body.classList.contains("rgb");
       if (rgbEnabled) {
         document.body.style.background = "";
@@ -1676,8 +1687,56 @@ document.addEventListener("DOMContentLoaded", () => {
       soundManager.play("click");
       vibrationManager.vibrate(50);
     });
+  } 
+  
+  if (performanceModeBtn) {
+    performanceModeBtn.addEventListener("click", () => {
+      performanceMode = !performanceMode;
+      localStorage.setItem("performanceMode", performanceMode);
+      performanceModeBtn.textContent = performanceMode ? "כבה מצב ביצועים" : "הפעל מצב ביצועים";
+  
+      if (performanceMode) {
+        // Disable resource-intensive features
+        stopRGBWaves();
+        document.body.classList.remove("rgb");
+        loadParticles(); // This will clear particles since performanceMode is true
+        // Reset to saved theme or gradient
+        const savedGradient = JSON.parse(localStorage.getItem("customGradient"));
+        if (savedGradient) {
+          applyCustomGradient(savedGradient.color1, savedGradient.color2);
+        } else {
+          const savedTheme = localStorage.getItem("theme") || "dark";
+          document.body.classList.add(savedTheme);
+        }
+        localStorage.setItem("rgbEnabled", false);
+        if (rgbBtn) {
+          rgbBtn.textContent = "הפעל גלי צבעים";
+        }
+      } else {
+        // Re-enable features based on saved settings
+        loadParticles();
+        const rgbEnabled = localStorage.getItem("rgbEnabled") === "true";
+        if (rgbEnabled) {
+          document.body.classList.add("rgb");
+          startRGBWaves();
+          if (rgbBtn) {
+            rgbBtn.textContent = "כבה גלי צבעים";
+          }
+        }
+      }
+      soundManager.play("click");
+      vibrationManager.vibrate(50);
+    });
+  } else {
+    console.warn("performanceModeBtn element not found in the DOM");
   }
-
+  
+  backToGameBtn.addEventListener("click", () => {
+    settingsMenu.classList.add("hidden");
+    gameArea.classList.remove("hidden");
+    soundManager.play("click");
+    vibrationManager.vibrate(50);
+  });
 
   backToGameBtn.addEventListener("click", () => {
     settingsMenu.classList.add("hidden");

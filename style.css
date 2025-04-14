@@ -1232,7 +1232,7 @@ body.neon .color-options span {
 }
 
 #applyGradientBtn {
-  padding: 8px 16px;
+  padding: 14px 14px;
   font-size: 16px;
   border: none;
   border-radius: 8px;
@@ -1841,6 +1841,7 @@ body.neon #leaderboardList::-webkit-scrollbar-thumb {
   #applyGradientBtn,
   #resetGradientBtn,
   #playAgainBtn,
+  performanceModeBtn,
   #startMemoryMatchBtn,
   #restartMemoryMatchBtn,
   #startTriviaBtn,
@@ -2214,6 +2215,43 @@ body.neon #resetGradientBtn {
   background: linear-gradient(135deg, #ff4040, #ff6347);
   color: #000000;
 }
+#performanceModeBtn {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+  margin-left: 10px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+#performanceModeBtn:hover {
+  background: linear-gradient(135deg, #ff6347, #ff4040);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.light #performanceModeBtn {
+  background: linear-gradient(135deg, #ff8080, #ffa07a);
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(255, 128, 128, 0.4);
+}
+
+body.light #performanceModeBtn:hover {
+  background: linear-gradient(135deg, #ffa07a, #ff8080);
+  box-shadow: 0 6px 20px rgba(255, 128, 128, 0.6);
+}
+
+body.neon #performanceModeBtn {
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  color: #000000;
+}
 
 /* Prevent text selection on non-interactive text elements to avoid blinking cursor */
 #gameArea h1,
@@ -2339,3 +2377,4 @@ body.neon #playAgainBtn {
   background: linear-gradient(135deg, #40c4ff, #0288d1);
   color: #000000;
 }
+
