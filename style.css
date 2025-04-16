@@ -45,17 +45,30 @@ body::before {
 }
 
 body.light {
-  background: var(--gradient-light);
+  background: linear-gradient(45deg, #e0ff98, #ff9dd3, #58f1f1, #8bff8b);
+  background-size: 600%;
+  animation: gradient 20s ease infinite;
   color: #333333;
-  --text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  --button-shadow: 0 4px 15px rgba(135, 206, 250, 0.4);
+}
+
+@keyframes light {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 body.neon {
-  background: var(--gradient-neon);
+  background: linear-gradient(45deg, #00ffcc, #ff00ff, #00ffff, #00ffcc);
+  background-size: 600%;
+  animation: gradient 20s ease infinite;
   color: #00ffcc;
-  --text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-  --button-shadow: 0 4px 15px rgba(0, 206, 209, 0.5);
+  text-shadow: 0 0 5px #00ffcc, 0 0 10px #00ffcc;
+}
+
+@keyframes neon {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 body.space {
@@ -73,7 +86,7 @@ body.rgb {
   transition: background-color 0.5s ease;
 }
 
-/* Ensure theme gradients are overridden when RGB is active */
+
 body.rgb.dark,
 body.rgb.light,
 body.rgb.neon,
@@ -465,7 +478,8 @@ body.neon .trivia-option:hover {
 }
 
 #adminUserSelect,
-#adminBanUserSelect {
+#adminBanUserSelect,
+#adminResetScoreSelect {
   padding: 8px;
   font-size: 16px;
   border-radius: 5px;
@@ -479,14 +493,16 @@ body.neon .trivia-option:hover {
 }
 
 body.light #adminUserSelect,
-body.light #adminBanUserSelect {
-  border: 1px solid #333333;
+body.light #adminBanUserSelect,
+body.light #adminResetScoreSelect {
+  border: px solid #333333;
   background: rgba(255, 255, 255, 0.3);
   color: #333333;
 }
 
 body.neon #adminUserSelect,
-body.neon #adminBanUserSelect {
+body.neon #adminBanUserSelect,
+body.neon #adminResetScoreSelect {
   border: 1px solid #00ffcc;
   background: rgba(0, 255, 255, 0.1);
   color: #00ffcc;
@@ -1514,7 +1530,7 @@ body.neon #resetStatsBtn {
 
 /* חלק 15: סגנונות לחלקיקים, כיתוב משני, אנימציית גלים, הודעת רטט */
 #particles-js {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -2378,3 +2394,235 @@ body.neon #playAgainBtn {
   color: #000000;
 }
 
+#triviaQuestionsCounter {
+  font-size: 16px;
+  margin: 10px 0;
+  text-shadow: var(--text-shadow);
+  color: #ffffff;
+}
+
+body.light #triviaQuestionsCounter {
+  color: #333333;
+}
+
+body.neon #triviaQuestionsCounter {
+  color: #00ffcc;
+}
+
+@media (max-width: 600px) {
+  #triviaQuestionsCounter {
+    font-size: 14px;
+  }
+}
+
+/* Styling for Banned Users List */
+#bannedUsersList {
+  max-height: 150px;
+  overflow-y: auto;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+#bannedUsersList li {
+  padding: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+#bannedUsersList li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.light #bannedUsersList {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light #bannedUsersList li {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.light #bannedUsersList li:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.neon #bannedUsersList {
+  background: rgba(0, 255, 255, 0.05);
+}
+
+body.neon #bannedUsersList li {
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+body.neon #bannedUsersList li:hover {
+  background: rgba(0, 255, 255, 0.1);
+}
+
+/* Styling for Unban User Button */
+#unbanUserBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #50c878, #32cd32);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 4px 15px rgba(80, 200, 120, 0.4);
+  min-width: 48px;
+  min-height: 48px;
+}
+
+#unbanUserBtn:hover {
+  background: linear-gradient(135deg, #32cd32, #50c878);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(80, 200, 120, 0.6);
+}
+
+body.light #unbanUserBtn {
+  background: linear-gradient(135deg, #98fb98, #90ee90);
+  color: #333333;
+  box-shadow: 0 4px 15px rgba(152, 251, 152, 0.4);
+}
+
+body.light #unbanUserBtn:hover {
+  background: linear-gradient(135deg, #90ee90, #98fb98);
+  box-shadow: 0 6px 20px rgba(152, 251, 152, 0.6);
+}
+
+body.neon #unbanUserBtn {
+  background: linear-gradient(135deg, #00ff00, #00cc00);
+  color: #000000;
+}
+
+body.neon #unbanUserBtn:hover {
+  background: linear-gradient(135deg, #00cc00, #00ff00);
+  box-shadow: 0 6px 20px rgba(0, 255, 0, 0.7);
+}
+
+/* Responsive adjustments for new elements */
+@media (max-width: 600px) {
+  #forgotPasswordBtn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  #unbanUserBtn {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  #bannedUsersList {
+    max-height: 120px;
+  }
+
+  #bannedUsersList li {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+#stopTriviaBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ff4500, #dc143c);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 4px 15px rgba(220, 20, 60, 0.4);
+  min-width: 48px;
+  min-height: 48px;
+}
+
+#stopTriviaBtn:hover {
+  background: linear-gradient(135deg, #dc143c, #ff4500);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 20, 60, 0.6);
+}
+
+body.light #stopTriviaBtn {
+  background: linear-gradient(135deg, #ff6347, #ff4040);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 64, 64, 0.4);
+}
+
+body.light #stopTriviaBtn:hover {
+  background: linear-gradient(135deg, #ff4040, #ff6347);
+  box-shadow: 0 6px 20px rgba(255, 64, 64, 0.6);
+}
+
+body.neon #stopTriviaBtn {
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  color: #ffffff;
+}
+
+body.neon #stopTriviaBtn:hover {
+  background: linear-gradient(135deg, #cc0000, #ff0000);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.7);
+}
+
+#resetUserScoreBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4682b4, #4169e1);
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  font-family: "Rubik", sans-serif;
+  box-shadow: 0 4px 15px rgba(65, 105, 225, 0.4);
+  min-width: 48px;
+  min-height: 48px;
+}
+
+#resetUserScoreBtn:hover {
+  background: linear-gradient(135deg, #4169e1, #4682b4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(65, 105, 225, 0.6);
+}
+
+body.light #resetUserScoreBtn {
+  background: linear-gradient(135deg, #87ceeb, #6495ed);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(100, 149, 237, 0.4);
+}
+
+body.light #resetUserScoreBtn:hover {
+  background: linear-gradient(135deg, #6495ed, #87ceeb);
+  box-shadow: 0 6px 20px rgba(100, 149, 237, 0.6);
+}
+
+body.neon #resetUserScoreBtn {
+  background: linear-gradient(135deg, #00b7eb, #0099cc);
+  color: #ffffff;
+}
+
+body.neon #resetUserScoreBtn:hover {
+  background: linear-gradient(135deg, #0099cc, #00b7eb);
+  box-shadow: 0 6px 20px rgba(0, 183, 235, 0.7);
+}
+
+#adminResetScoreMessage {
+  font-size: 14px;
+  margin: 10px 0;
+  color: #ffffff;
+}
+
+body.light #adminResetScoreMessage {
+  color: #333333;
+}
+
+body.neon #adminResetScoreMessage {
+  color: #00ffcc;
+}

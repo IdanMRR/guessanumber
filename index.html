@@ -14,9 +14,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body class="dark">
-  <!-- שכבת חלקיקים ברקע -->
   <div id="particles-js"></div>
 
   <button id="settingsBtn" title="הגדרות" aria-label="פתח תפריט הגדרות">⚙️</button>
@@ -37,7 +37,6 @@
     <h1>משחקי רשת מדהימים</h1>
     <p id="subtitle">בחר משחק ותיהנה! ✨</p>
 
-    <!-- Game Selection Menu -->
     <div id="gameSelection" class="game-selection">
       <h3>בחר משחק:</h3>
       <button id="selectNumberGuessBtn" aria-label="משחק ניחוש מספרים">ניחוש מספרים</button>
@@ -45,7 +44,6 @@
       <button id="selectTriviaBtn" aria-label="משחק טריוויה">טריוויה</button>
     </div>
 
-    <!-- Number Guessing Game -->
     <div id="numberGuessGame" class="game-section">
       <div id="difficultySection">
         <label for="difficulty">בחר רמת קושי:</label>
@@ -81,7 +79,6 @@
       <p id="idleTimer" aria-live="polite"></p>
     </div>
 
-    <!-- Memory Match Game -->
     <div id="memoryMatchGame" class="game-section hidden">
       <div id="memoryDifficultySection">
         <label for="memoryDifficulty">בחר רמת קושי:</label>
@@ -100,7 +97,6 @@
       <button id="restartMemoryMatchBtn" style="display: none;" aria-label="שחק שוב משחק זיכרון">שחק שוב</button>
     </div>
 
-    <!-- Trivia Game -->
     <div id="triviaGame" class="game-section hidden">
       <div id="triviaCategorySection">
         <label for="triviaCategory">בחר קטגוריה:</label>
@@ -110,6 +106,7 @@
           <option value="history">היסטוריה</option>
           <option value="science">מדע</option>
         </select>
+        <p id="triviaQuestionsCounter" aria-live="polite" style="display: none;">שאלות נותרו: 10</p>
       </div>
       <button id="startTriviaBtn" aria-label="התחל משחק טריוויה">התחל טריוויה</button>
       <div id="triviaQuestion" class="hidden">
@@ -120,6 +117,7 @@
       <p id="triviaScore" aria-live="polite"></p>
       <p id="triviaTimer" aria-live="polite"></p>
       <button id="restartTriviaBtn" style="display: none;" aria-label="שחק שוב טריוויה">שחק שוב</button>
+      <button id="stopTriviaBtn" style="display: none;" aria-label="עצור משחק טריוויה">עצור משחק</button>
     </div>
 
     <button id="viewStatsBtn" aria-label="צפה בסטטיסטיקות">📊 צפה בסטטיסטיקות</button>
@@ -185,7 +183,6 @@
         <button id="resetGradientBtn">הסר גרדיאנט</button>
       </div>
       <button id="performanceModeBtn">הפעל מצב ביצועים</button>
-     </div>
       <button id="backToGame" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
   </div>
@@ -237,7 +234,6 @@
     </div>
   </div>
 
-  <!-- Admin Panel -->
   <div id="adminPanel" class="hidden">
     <div class="menuArea">
       <h3>פאנל ניהול</h3>
@@ -253,8 +249,19 @@
         <p id="adminBanMessage" aria-live="polite"></p>
       </div>
       <div class="admin-section">
+        <h4>משתמשים חסומים</h4>
+        <ul id="bannedUsersList" aria-label="רשימת משתמשים חסומים"></ul>
+        <button id="unbanUserBtn" aria-label="בטל חסימה למשתמש">בטל חסימה</button>
+      </div>
+      <div class="admin-section">
         <h4>ניהול דירוג</h4>
-        <button id="resetLeaderboardBtn" aria-label="אפס דירוג">אפס דירוג</button>
+        <button id="resetLeaderboardBtn" aria-label="אפס דירוג לכל השחקנים">אפס דירוג</button>
+        <br>
+        <br>  
+        <select id="adminResetScoreSelect" aria-label="בחר משתמש לאיפוס ניקוד"></select>
+        <br> 
+        <button id="resetUserScoreBtn" aria-label="אפס ניקוד משתמש">אפס ניקוד משתמש</button>
+        <p id="adminResetScoreMessage" aria-live="polite"></p>
       </div>
       <button id="backToGameFromAdmin" aria-label="חזור למשחק">חזור למשחק</button>
     </div>
